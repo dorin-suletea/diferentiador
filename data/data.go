@@ -1,31 +1,44 @@
 package data
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"os/exec"
-	"regexp"
 	"strings"
 )
 
-type FileStatus int32
+type FileStatus string
 
 const (
-	added    FileStatus = 0
-	modified FileStatus = 1
-	deleted  FileStatus = 2
+	added    FileStatus = "a"
+	modified FileStatus = "m"
+	deleted  FileStatus = "d"
+	unstaged FileStatus = "u"
 )
 
 func GetChangedFiles() error {
-	files := []File{}
-
+	// split output into lines
 	deletedFilesStr := runCmd("git", "status", "-s")
-	lines := splitByEmptyNewline(deletedFilesStr)
+	unfilteredLines := strings.Split(deletedFilesStr, "\n")
+	fmt.Println("----------")
+	lines := []string{}
+	for _, l := range unfilteredLines {
+		if len(strings.TrimSpace(l)) != 0 {
+			lines = append(lines, l)
+		}
+	}
+
+	fmt.Println(lines)
+	fmt.Println("----------")
+
+	// tokenize into data objects
+	files := []File{}
 	for _, line := range lines {
-		splits := strings.Split(line, " ")
+		splits := strings.Fields(line)
+		// fmt.Println(line)
+		// fmt.Println("----------")
 		if len(splits) > 2 {
-			return errors.New("InternalError line must have 2 tokens :" + line)
+			fmt.Println("InternalError line must have 2 tokens :" + line)
 		}
 		switch splits[0] {
 		case "A":
@@ -34,10 +47,17 @@ func GetChangedFiles() error {
 			files = append(files, File{splits[1], true, deleted})
 		case "M":
 			files = append(files, File{splits[1], true, modified})
+		case "MM":
+			files = append(files, File{splits[1], true, modified})
+		case "??":
+			files = append(files, File{splits[1], true, unstaged})
 		}
-	}
 
-	fmt.Printf("%v", lines)
+	}
+	fmt.Printf("%v", files)
+	// fmt.Printf("%v", files[1])
+
+	return nil
 }
 
 // only deleted
@@ -64,15 +84,4 @@ func runCmd(cmd string, args ...string) string {
 		log.Fatal(err)
 	}
 	return string(out[:])
-}
-
-func splitByEmptyNewline(str string) []string {
-	strNormalized := regexp.
-		MustCompile("\r\n").
-		ReplaceAllString(str, "\n")
-
-	return regexp.
-		MustCompile(`\n\s*\n`).
-		Split(strNormalized, -1)
-
 }
