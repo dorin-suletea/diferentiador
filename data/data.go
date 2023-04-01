@@ -70,7 +70,7 @@ func GetChangedFiles() error {
 // all staged
 //git ls-files -s
 
-// all unstaged
+// all untracked
 //git ls-files -o
 
 type File interface {
