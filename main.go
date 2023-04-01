@@ -18,14 +18,15 @@ import (
 	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"github.com/dorin-suletea/diferentiador~/data"
 )
 
-const preferenceCurrentTutorial = "currentTutorial"
-
-var topWindow fyne.Window
+func main() {
+	data.GetChangedFiles()
+}
 
 //git diff --no-prefix -U1000 main.go
-func main() {
+func main3() {
 	app := app.NewWithID("diferentiador")
 	app.SetIcon(theme.FyneLogo())
 	window := app.NewWindow("diferentiador")
@@ -64,6 +65,9 @@ func main() {
 //
 //
 //
+var topWindow fyne.Window
+
+const preferenceCurrentTutorial = "currentTutorial"
 
 func main2() {
 	a := app.NewWithID("io.fyne.demo")
