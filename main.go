@@ -25,10 +25,50 @@ const preferenceCurrentTutorial = "currentTutorial"
 var topWindow fyne.Window
 
 func main() {
+	app := app.NewWithID("diferentiador")
+	app.SetIcon(theme.FyneLogo())
+	window := app.NewWindow("diferentiador")
+
+	changedContent := widget.NewTextGridFromString("potato poteason")
+
+	var data = []string{"a", "string", "list"}
+	changedFiles := container.NewBorder(nil, nil, nil, nil, widget.NewList(
+		func() int {
+			return len(data)
+		},
+		func() fyne.CanvasObject {
+			return container.NewPadded(
+				widget.NewButton("", nil),
+			)
+		},
+		func(id widget.ListItemID, item fyne.CanvasObject) {
+			item.(*fyne.Container).Objects[0].(*widget.Button).SetText(data[id])
+			item.(*fyne.Container).Objects[0].(*widget.Button).OnTapped = func() {
+				fmt.Println("I am button " + data[id])
+				changedContent.SetText(data[id])
+			}
+		}))
+
+	split := container.NewHSplit(changedFiles, changedContent)
+	split.Offset = 0.2
+
+	window.SetContent(split)
+
+	window.Resize(fyne.NewSize(1040, 460))
+	window.ShowAndRun()
+}
+
+//
+//
+//
+//
+//
+
+func main2() {
 	a := app.NewWithID("io.fyne.demo")
 	a.SetIcon(theme.FyneLogo())
+	a.Settings().SetTheme(theme.LightTheme())
 	makeTray(a)
-	logLifecycle(a)
 	w := a.NewWindow("Fyne Demo")
 	topWindow = w
 
@@ -36,21 +76,12 @@ func main() {
 	w.SetMaster()
 
 	content := container.NewMax()
-	title := widget.NewLabel("Component name")
+	title := widget.NewLabel("Component name blah")
 	intro := widget.NewLabel("An introduction would probably go\nhere, as well as a")
+	grid := widget.NewTextGridFromString("potato poteason")
+
 	intro.Wrapping = fyne.TextWrapWord
 	setTutorial := func(t tutorials.Tutorial) {
-		if fyne.CurrentDevice().IsMobile() {
-			child := a.NewWindow(t.Title)
-			topWindow = child
-			child.SetContent(t.View(topWindow))
-			child.Show()
-			child.SetOnClosed(func() {
-				topWindow = w
-			})
-			return
-		}
-
 		title.SetText(t.Title)
 		intro.SetText(t.Intro)
 
@@ -59,31 +90,15 @@ func main() {
 	}
 
 	tutorial := container.NewBorder(
-		container.NewVBox(title, widget.NewSeparator(), intro), nil, nil, nil, content)
-	if fyne.CurrentDevice().IsMobile() {
-		w.SetContent(makeNav(setTutorial, false))
-	} else {
-		split := container.NewHSplit(makeNav(setTutorial, true), tutorial)
-		split.Offset = 0.2
-		w.SetContent(split)
-	}
+		container.NewVBox(title, widget.NewSeparator(), intro, grid), nil, nil, nil, content)
+
+	// file tab
+	split := container.NewHSplit(makeNav(setTutorial, true), tutorial)
+	split.Offset = 0.2
+	w.SetContent(split)
+
 	w.Resize(fyne.NewSize(640, 460))
 	w.ShowAndRun()
-}
-
-func logLifecycle(a fyne.App) {
-	a.Lifecycle().SetOnStarted(func() {
-		log.Println("Lifecycle: Started")
-	})
-	a.Lifecycle().SetOnStopped(func() {
-		log.Println("Lifecycle: Stopped")
-	})
-	a.Lifecycle().SetOnEnteredForeground(func() {
-		log.Println("Lifecycle: Entered Foreground")
-	})
-	a.Lifecycle().SetOnExitedForeground(func() {
-		log.Println("Lifecycle: Exited Foreground")
-	})
 }
 
 func makeMenu(a fyne.App, w fyne.Window) *fyne.MainMenu {
@@ -196,59 +211,69 @@ func unsupportedTutorial(t tutorials.Tutorial) bool {
 }
 
 func makeNav(setTutorial func(tutorial tutorials.Tutorial), loadPrevious bool) fyne.CanvasObject {
-	a := fyne.CurrentApp()
-
-	tree := &widget.Tree{
-		ChildUIDs: func(uid string) []string {
-			return tutorials.TutorialIndex[uid]
+	var data = []string{"a", "string", "list"}
+	list := widget.NewList(
+		func() int {
+			return len(data)
 		},
-		IsBranch: func(uid string) bool {
-			children, ok := tutorials.TutorialIndex[uid]
-
-			return ok && len(children) > 0
+		func() fyne.CanvasObject {
+			return container.NewPadded(
+				widget.NewButton("", nil),
+			)
+			// return widget.NewLabel("template")
 		},
-		CreateNode: func(branch bool) fyne.CanvasObject {
-			return widget.NewLabel("Collection Widgets")
-		},
-		UpdateNode: func(uid string, branch bool, obj fyne.CanvasObject) {
-			t, ok := tutorials.Tutorials[uid]
-			if !ok {
-				fyne.LogError("Missing tutorial panel: "+uid, nil)
-				return
+		func(id widget.ListItemID, item fyne.CanvasObject) {
+			item.(*fyne.Container).Objects[0].(*widget.Button).SetText(data[id])
+			item.(*fyne.Container).Objects[0].(*widget.Button).OnTapped = func() {
+				fmt.Println("I am button " + data[id])
 			}
-			obj.(*widget.Label).SetText(t.Title)
-			if unsupportedTutorial(t) {
-				obj.(*widget.Label).TextStyle = fyne.TextStyle{Italic: true}
-			} else {
-				obj.(*widget.Label).TextStyle = fyne.TextStyle{}
-			}
-		},
-		OnSelected: func(uid string) {
-			if t, ok := tutorials.Tutorials[uid]; ok {
-				if unsupportedTutorial(t) {
-					return
-				}
-				a.Preferences().SetString(preferenceCurrentTutorial, uid)
-				setTutorial(t)
-			}
-		},
-	}
+		})
+	return container.NewBorder(nil, nil, nil, nil, list)
 
-	if loadPrevious {
-		currentPref := a.Preferences().StringWithFallback(preferenceCurrentTutorial, "welcome")
-		tree.Select(currentPref)
-	}
+	// a := fyne.CurrentApp()
 
-	themes := container.NewGridWithColumns(2,
-		widget.NewButton("Dark", func() {
-			a.Settings().SetTheme(theme.DarkTheme())
-		}),
-		widget.NewButton("Light", func() {
-			a.Settings().SetTheme(theme.LightTheme())
-		}),
-	)
+	// tree := &widget.Tree{
+	// 		ChildUIDs: func(uid string) []string {
+	// 			return tutorials.TutorialIndex[uid]
+	// 		},
+	// 	IsBranch: func(uid string) bool {
+	// 		children, ok := tutorials.TutorialIndex[uid]
 
-	return container.NewBorder(nil, themes, nil, nil, tree)
+	// 		return ok && len(children) > 0
+	// 	},
+	// 	CreateNode: func(branch bool) fyne.CanvasObject {
+	// 		return widget.NewLabel("Collection Widgets")
+	// 	},
+	// 	UpdateNode: func(uid string, branch bool, obj fyne.CanvasObject) {
+	// 		t, ok := tutorials.Tutorials[uid]
+	// 		if !ok {
+	// 			fyne.LogError("Missing tutorial panel: "+uid, nil)
+	// 			return
+	// 		}
+	// 		obj.(*widget.Label).SetText(t.Title)
+	// 		if unsupportedTutorial(t) {
+	// 			obj.(*widget.Label).TextStyle = fyne.TextStyle{Italic: true}
+	// 		} else {
+	// 			obj.(*widget.Label).TextStyle = fyne.TextStyle{}
+	// 		}
+	// 	},
+	// 	OnSelected: func(uid string) {
+	// 		if t, ok := tutorials.Tutorials[uid]; ok {
+	// 			if unsupportedTutorial(t) {
+	// 				return
+	// 			}
+	// 			a.Preferences().SetString(preferenceCurrentTutorial, uid)
+	// 			setTutorial(t)
+	// 		}
+	// 	},
+
+	// if loadPrevious {
+	// 	currentPref := a.Preferences().StringWithFallback(preferenceCurrentTutorial, "welcome")
+	// 	tree.Select(currentPref)
+	// }
+
+	// return container.NewBorder(nil, nil, nil, nil, tree)
+
 }
 
 func shortcutFocused(s fyne.Shortcut, w fyne.Window) {
