@@ -40,17 +40,18 @@ func GetChangedFiles() error {
 		if len(splits) > 2 {
 			fmt.Println("InternalError line must have 2 tokens :" + line)
 		}
-		switch splits[0] {
-		case "A":
-			files = append(files, File{splits[1], true, added})
-		case "D":
-			files = append(files, File{splits[1], true, deleted})
-		case "M":
-			files = append(files, File{splits[1], true, modified})
-		case "MM":
-			files = append(files, File{splits[1], true, modified})
-		case "??":
-			files = append(files, File{splits[1], true, unstaged})
+		// read only first character
+		switch splits[0][0] {
+		case 'A':
+			files = append(files, SimpleFile{splits[1], true, added})
+		case 'D':
+			files = append(files, SimpleFile{splits[1], true, deleted})
+		case 'M':
+			files = append(files, SimpleFile{splits[1], true, modified})
+		case 'R':
+			files = append(files, RenamedFile{SimpleFile{splits[3], true, modified}, splits[1]})
+		case '?':
+			files = append(files, SimpleFile{splits[1], true, unstaged})
 		}
 
 	}
@@ -72,10 +73,27 @@ func GetChangedFiles() error {
 // all unstaged
 //git ls-files -o
 
-type File struct {
-	FileName string
+type File interface {
+	String() string
+}
+
+type SimpleFile struct {
+	fileName string
 	staged   bool
 	status   FileStatus
+}
+
+func (f SimpleFile) String() string {
+	return fmt.Sprintf("(%v %v %v)", f.fileName, f.staged, f.status)
+}
+
+type RenamedFile struct {
+	file    SimpleFile
+	oldName string
+}
+
+func (f RenamedFile) String() string {
+	return fmt.Sprintf("(%v -> %v %v %v)", f.oldName, f.file.fileName, f.file.staged, f.file.status)
 }
 
 func runCmd(cmd string, args ...string) string {
