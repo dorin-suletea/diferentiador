@@ -16,7 +16,7 @@ const (
 	untracked FileStatus = "u"
 )
 
-func GetChangedFiles() error {
+func GetModifiedFiles() []File {
 	// split output into lines
 	rawGitStatus := runCmd("git", "status", "-s")
 	lines := filterEmptyLines(strings.Split(rawGitStatus, "\n"))
@@ -48,12 +48,8 @@ func GetChangedFiles() error {
 		case "??":
 			files = append(files, SimpleFile{splits[1], false, untracked})
 		}
-
 	}
-	fmt.Printf("%v", files)
-	// fmt.Printf("%v", files[1])
-
-	return nil
+	return files
 }
 
 type File interface {
