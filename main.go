@@ -24,6 +24,7 @@ const preferenceCurrentTutorial = "currentTutorial"
 
 var topWindow fyne.Window
 
+//git diff --no-prefix -U1000 main.go
 func main() {
 	app := app.NewWithID("diferentiador")
 	app.SetIcon(theme.FyneLogo())
