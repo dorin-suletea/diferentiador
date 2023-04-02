@@ -6,7 +6,11 @@ package main
 //go run fyne.io/fyne/v2/cmd/fyne_demo@latest
 
 import (
+	"bufio"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -14,21 +18,53 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"github.com/dorin-suletea/diferentiador~/internal/changelog"
 )
 
 type myTheme struct{}
 
-//git diff --no-prefix -U1000 main.go
 func main() {
+	app := app.NewWithID("diferentiador")
+	app.SetIcon(theme.FyneLogo())
+	window := app.NewWindow("diferentiador")
+	changedContent := widget.NewTextGridFromString("potato poteason")
+
+	mods := changelog.GetGitModififications()
+	modsWidget := changelog.NewModifiedItemsWidget(mods)
+
+	split := container.NewHSplit(modsWidget, changedContent)
+	split.Offset = 0.2
+
+	window.SetContent(split)
+
+	window.Resize(fyne.NewSize(1040, 460))
+	window.ShowAndRun()
+}
+
+//git diff --no-prefix -U1000 main.go
+func main3() {
 	app := app.NewWithID("diferentiador")
 	// app.Settings().SetTheme(ui.NewCustomTheme())
 	app.SetIcon(theme.FyneLogo())
 	window := app.NewWindow("diferentiador")
 	changedContent := widget.NewTextGridFromString("potato poteason")
 
-	// var data = []string{"a", "string", "list"}
+	var data = []string{"a", "string", "list"}
 
-	label := widget.NewLabel("AAAAAAAAA")
+	iconFile, err := os.Open("/home/dsu/Workspace/diferentiador/res/red_a.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	r := bufio.NewReader(iconFile)
+
+	b, err := ioutil.ReadAll(r)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	name := widget.NewLabel("ssssss")
+	label := widget.NewIcon(fyne.NewStaticResource("icon", b))
 	button := widget.NewButtonWithIcon(">", theme.ConfirmIcon(), func() { fmt.Println("tapped text & leading icon button") })
 	// button.Resize(fyne.NewSize(150, 30))
 	// label.Resize(fyne.NewSize(150, 30))
@@ -37,9 +73,9 @@ func main() {
 	// 	label, widget.NewLabel(""), widget.NewLabel(""), button)
 	// grid := container.New(layout.NewGridLayout(2),
 	// 	label, button)
-	grid := container.New(layout.NewGridWrapLayout(fyne.NewSize(200, 40)),
-		container.New(layout.NewHBoxLayout(), label, layout.NewSpacer(), button),
-		container.New(layout.NewHBoxLayout(), label, layout.NewSpacer(), button))
+	// grid := container.New(layout.NewGridWrapLayout(fyne.NewSize(200, 40)),
+	// 	container.New(layout.NewHBoxLayout(), label, layout.NewSpacer(), button),
+	// 	container.New(layout.NewHBoxLayout(), label, name, layout.NewSpacer(), button))
 
 	// row := container.NewBorder(nil, nil, label, button)
 
@@ -78,7 +114,19 @@ func main() {
 	// 		}
 	// 	}))
 
-	split := container.NewHSplit(grid, changedContent)
+	list := widget.NewList(
+		func() int {
+			return len(data)
+		},
+		func() fyne.CanvasObject {
+			return container.New(layout.NewHBoxLayout(), label, name, layout.NewSpacer(), button)
+		},
+		func(i widget.ListItemID, o fyne.CanvasObject) {
+			// o.(*widget.Label).SetText(data[i])
+		})
+
+	// split := container.NewHSplit(grid, changedContent)
+	split := container.NewHSplit(list, changedContent)
 	split.Offset = 0.2
 
 	window.SetContent(split)

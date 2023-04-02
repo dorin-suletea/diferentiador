@@ -1,7 +1,6 @@
-package data
+package changelog
 
 import (
-	"fmt"
 	"log"
 	"os/exec"
 	"strings"
@@ -10,19 +9,19 @@ import (
 type FileStatus string
 
 const (
-	added     FileStatus = "a"
-	modified  FileStatus = "m"
-	deleted   FileStatus = "d"
-	untracked FileStatus = "u"
+	Added     FileStatus = "a"
+	Modified  FileStatus = "m"
+	Deleted   FileStatus = "d"
+	Untracked FileStatus = "u"
 )
 
-func GetModifiedFiles() []File {
+func GetGitModififications() []GitModification {
 	// split output into lines
-	rawGitStatus := runCmd("git", "status", "-s")
+	rawGitStatus := runCmd("git", "status", "-s", "-u")
 	lines := filterEmptyLines(strings.Split(rawGitStatus, "\n"))
 
 	// tokenize into data objects
-	files := []File{}
+	files := []GitModification{}
 	for _, line := range lines {
 		// whitespaces are significant for the status
 		statusToken := line[0:2]
@@ -30,49 +29,34 @@ func GetModifiedFiles() []File {
 		splits := strings.Fields(line)
 		switch statusToken {
 		case "A ":
-			files = append(files, SimpleFile{splits[1], true, added})
+			files = append(files, GitModification{splits[1], true, Added})
 		case " A":
 			// no-op : unstaged add means untracked
 		case "D ":
-			files = append(files, SimpleFile{splits[1], true, deleted})
+			files = append(files, GitModification{splits[1], true, Deleted})
 		case " D":
-			files = append(files, SimpleFile{splits[1], false, deleted})
+			files = append(files, GitModification{splits[1], false, Deleted})
 		case "M ":
-			files = append(files, SimpleFile{splits[1], true, modified})
+			files = append(files, GitModification{splits[1], true, Modified})
 		case " M":
-			files = append(files, SimpleFile{splits[1], false, modified})
+			files = append(files, GitModification{splits[1], false, Modified})
 		case "R ":
-			files = append(files, RenamedFile{SimpleFile{splits[3], true, modified}, splits[1]})
+			oldName := splits[3]
+			newName := splits[1]
+			files = append(files, GitModification{oldName + "->" + newName, true, Modified})
 		case " R":
 			// no-op : rename is always staged, else its a detele+add
 		case "??":
-			files = append(files, SimpleFile{splits[1], false, untracked})
+			files = append(files, GitModification{splits[1], false, Untracked})
 		}
 	}
 	return files
 }
 
-type File interface {
-	String() string
-}
-
-type SimpleFile struct {
+type GitModification struct {
 	fileName string
 	staged   bool
 	status   FileStatus
-}
-
-func (f SimpleFile) String() string {
-	return fmt.Sprintf("(%v %v %v)", f.fileName, f.staged, f.status)
-}
-
-type RenamedFile struct {
-	file    SimpleFile
-	oldName string
-}
-
-func (f RenamedFile) String() string {
-	return fmt.Sprintf("(%v -> %v %v %v)", f.oldName, f.file.fileName, f.file.staged, f.file.status)
 }
 
 func runCmd(cmd string, args ...string) string {
