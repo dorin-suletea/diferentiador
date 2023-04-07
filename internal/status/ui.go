@@ -10,15 +10,17 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func NewFilesStatusWidget(data []FileStatus) *widget.List {
-	return widget.NewList(
+type SelectionHandler func(string)
+
+func NewFilesStatusWidget(data []FileStatus, selectionHandler SelectionHandler) *widget.List {
+	list := widget.NewList(
 		func() int {
 			return len(data)
 		},
 		func() fyne.CanvasObject {
 			placeholderStatusIcon := widget.NewIcon(theme.ConfirmIcon())
 			placeholderFileName := widget.NewLabel("")
-			testButton := widget.NewButton("", func() {})
+			testButton := widget.NewButton("Select", func() {})
 			return container.New(layout.NewHBoxLayout(), placeholderStatusIcon, placeholderFileName, layout.NewSpacer(), testButton)
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
@@ -33,7 +35,11 @@ func NewFilesStatusWidget(data []FileStatus) *widget.List {
 			(container.Objects[0].(*widget.Icon)).SetResource(resource)
 			// file path
 			(container.Objects[1].(*widget.Label)).SetText(data[i].fileName)
+			(container.Objects[3].(*widget.Button)).OnTapped = func() {
+				selectionHandler(data[i].fileName)
+			}
 		})
+	return list
 }
 
 func loadIcon(relativePath string) (fyne.Resource, error) {

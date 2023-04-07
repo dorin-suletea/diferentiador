@@ -1,19 +1,24 @@
 package diff
 
 import (
-	"fmt"
 	"image/color"
 	"strings"
 
 	"fyne.io/fyne/v2/widget"
 )
 
-func NewDiffForFileWidget(content string) *widget.TextGrid {
+func NewEmptyDiffWidget() *widget.TextGrid {
+	grid := widget.NewTextGridFromString("")
+	grid.ShowLineNumbers = true
+	grid.ShowWhitespace = true
+	return grid
+}
+
+func SetDiffContent(diffContent string, mutableDiffWidget *widget.TextGrid) {
 	// diff := workingtree.GetAlterationsForFile("main.go")
 	// log.Println(diff)
-
-	grid := widget.NewTextGridFromString(content)
-	appyStlingForGrid(grid, content)
+	mutableDiffWidget.SetText(diffContent)
+	// appyStlingForGrid(mutableDiffWidget, diffContent)
 	// grid := widget.NewTextGridFromString(diff)
 	// grid.SetStyleRange(0, 4, 0, 7, &widget.CustomTextGridStyle{BGColor: &color.NRGBA{R: 64, G: 64, B: 192, A: 128}})
 	// grid.SetRowStyle(1, &rowAdded)
@@ -26,11 +31,6 @@ func NewDiffForFileWidget(content string) *widget.TextGrid {
 	// grid.Rows[2].Cells[2].Style = white
 	// grid.Rows[2].Cells[3].Style = black
 	// grid.Rows[2].Cells[4].Style = white
-
-	grid.ShowLineNumbers = true
-	grid.ShowWhitespace = true
-
-	return grid
 }
 
 func appyStlingForGrid(mutableGrid *widget.TextGrid, content string) {
@@ -44,7 +44,5 @@ func appyStlingForGrid(mutableGrid *widget.TextGrid, content string) {
 		if line[0] == '+' {
 			mutableGrid.SetRowStyle(index, &rowAdded)
 		}
-
-		fmt.Println(line)
 	}
 }

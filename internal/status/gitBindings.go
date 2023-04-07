@@ -59,14 +59,6 @@ type FileStatus struct {
 	status   Status
 }
 
-// func runCmd(cmd string, args ...string) string {
-// 	out, err := exec.Command(cmd, args...).Output()
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	return string(out[:])
-// }
-
 // git exec commands have a trailing line at the end, filter it out
 func filterEmptyLines(unfiltered []string) []string {
 	lines := []string{}

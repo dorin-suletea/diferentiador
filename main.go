@@ -21,15 +21,20 @@ func main() {
 	app.SetIcon(theme.FyneLogo())
 	window := app.NewWindow("diferentiador")
 	// changedContent := makeTextGrid()
-	// changedContent := widget.NewTextGridFromString("potato poteason")
+	// changedContent := widget.NewTextGridFromString("potato poteason ")
 
-	mods := status.GetStatusForFiles()
-	modsWidget := status.NewFilesStatusWidget(mods)
+	fileStatus := status.GetStatusForFiles()
+	diffWidget := diff.NewEmptyDiffWidget()
+	scrollableDiffWidget := container.NewVScroll(diffWidget)
 
-	testMods := diff.GetDiffForFile("main.go")
-	testWidget := diff.NewDiffForFileWidget(testMods)
+	selectionHandler := func(selectedFile string) {
+		diffContent := diff.GetDiffForFile(selectedFile)
+		diff.SetDiffContent(diffContent, diffWidget)
+	}
 
-	split := container.NewHSplit(modsWidget, testWidget)
+	statusWidget := status.NewFilesStatusWidget(fileStatus, selectionHandler)
+
+	split := container.NewHSplit(statusWidget, scrollableDiffWidget)
 	split.Offset = 0.2
 
 	window.SetContent(split)
