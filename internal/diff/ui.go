@@ -15,22 +15,8 @@ func NewEmptyDiffWidget() *widget.TextGrid {
 }
 
 func SetDiffContent(diffContent string, mutableDiffWidget *widget.TextGrid) {
-	// diff := workingtree.GetAlterationsForFile("main.go")
-	// log.Println(diff)
 	mutableDiffWidget.SetText(diffContent)
-	// appyStlingForGrid(mutableDiffWidget, diffContent)
-	// grid := widget.NewTextGridFromString(diff)
-	// grid.SetStyleRange(0, 4, 0, 7, &widget.CustomTextGridStyle{BGColor: &color.NRGBA{R: 64, G: 64, B: 192, A: 128}})
-	// grid.SetRowStyle(1, &rowAdded)
-	// grid.SetRowStyle(3, &rowRemoved)
-
-	// white := &widget.CustomTextGridStyle{FGColor: color.White, BGColor: color.Black}
-	// black := &widget.CustomTextGridStyle{FGColor: color.Black, BGColor: color.White}
-	// grid.Rows[2].Cells[0].Style = white
-	// grid.Rows[2].Cells[1].Style = black
-	// grid.Rows[2].Cells[2].Style = white
-	// grid.Rows[2].Cells[3].Style = black
-	// grid.Rows[2].Cells[4].Style = white
+	appyStlingForGrid(mutableDiffWidget, diffContent)
 }
 
 func appyStlingForGrid(mutableGrid *widget.TextGrid, content string) {

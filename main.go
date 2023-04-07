@@ -16,12 +16,12 @@ import (
 
 type myTheme struct{}
 
+// TODO : TextGrid is terribly slow as it can style each character
+// create a custom one with styling per row.
 func main() {
 	app := app.NewWithID("diferentiador")
 	app.SetIcon(theme.FyneLogo())
 	window := app.NewWindow("diferentiador")
-	// changedContent := makeTextGrid()
-	// changedContent := widget.NewTextGridFromString("potato poteason ")
 
 	fileStatus := status.GetStatusForFiles()
 	diffWidget := diff.NewEmptyDiffWidget()
