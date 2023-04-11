@@ -320,8 +320,7 @@ func (t *TextArray) ensureCells(row, col int) {
 
 func (t *TextArray) refreshCell(row, col int) {
 	// DSU
-	panic("aaaa")
-	log.Println("refresh cell")
+	log.Println("NotSupported : refreshing")
 	// r := cache.Renderer(t).(*textGridRenderer)
 	// r.refreshCell(row, col)
 }
@@ -478,6 +477,7 @@ func (t *textGridRenderer) refreshGrid() {
 func (t *TextArray) tabWidth() int {
 	if t.TabWidth == 0 {
 		// DSU return painter.DefaultTabWidth
+		log.Println("Not supported tabWidth")
 		return 4
 	}
 	return t.TabWidth

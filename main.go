@@ -30,7 +30,6 @@ func main() {
 
 	selectionHandler := func(selectedFile string) {
 		diffContent := diff.GetDiffForFile(selectedFile)
-		// log.Print(diffContent)
 		diff.SetDiffContentForArray(diffContent, diffWidget)
 	}
 
