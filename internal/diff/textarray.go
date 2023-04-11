@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"fyne.io/fyne/v2/widget"
+	"github.com/dorin-suletea/diferentiador~/internal"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -103,6 +104,8 @@ func (t *TextArray) Resize(size fyne.Size) {
 // The grid will use default text style and any previous content and style will be removed.
 // Tab characters are padded with spaces to the next tab stop.
 func (t *TextArray) SetText(text string) {
+	ti := internal.NewSingleUseTicker()
+	ti.Tick("start")
 	lines := strings.Split(text, "\n")
 	rows := make([]TextGridRow, len(lines))
 	for i, line := range lines {
@@ -119,9 +122,11 @@ func (t *TextArray) SetText(text string) {
 		}
 		rows[i] = TextGridRow{Cells: cells}
 	}
-
+	ti.Tick("iteration")
 	t.Rows = rows
 	t.BaseWidget.Refresh()
+	ti.Tick("refresh")
+	ti.Print()
 }
 
 // Text returns the contents of the buffer as a single string (with no style information).
@@ -476,8 +481,7 @@ func (t *textGridRenderer) refreshGrid() {
 // tabWidth either returns the set tab width or if not set the returns the DefaultTabWidth
 func (t *TextArray) tabWidth() int {
 	if t.TabWidth == 0 {
-		// DSU return painter.DefaultTabWidth
-		log.Println("Not supported tabWidth")
+		// DSU "Not supported tabWidth"
 		return 4
 	}
 	return t.TabWidth

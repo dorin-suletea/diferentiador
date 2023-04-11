@@ -2,7 +2,6 @@ package diff
 
 import (
 	"image/color"
-	"log"
 	"strings"
 
 	"fyne.io/fyne/v2/widget"
@@ -49,7 +48,6 @@ func appyStlingForGrid(mutableGrid *widget.TextGrid, content string) {
 func appyStlingForArray(mutableGrid *TextArray, content string) {
 	rowAdded := widget.CustomTextGridStyle{BGColor: &color.NRGBA{R: 64, G: 192, B: 64, A: 128}}
 	rowRemoved := widget.CustomTextGridStyle{BGColor: &color.NRGBA{R: 192, G: 64, B: 64, A: 128}}
-	log.Println("stylins")
 
 	for index, line := range strings.Split(strings.TrimSuffix(content, "\n"), "\n") {
 		if line[0] == '-' {
