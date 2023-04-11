@@ -24,12 +24,14 @@ func main() {
 	window := app.NewWindow("diferentiador")
 
 	fileStatus := status.GetStatusForFiles()
-	diffWidget := diff.NewEmptyDiffWidget()
+	// diffWidget := diff.NewEmptyDiffWidget()
+	diffWidget := diff.NewEmptyDiffWidgetTextArray()
 	scrollableDiffWidget := container.NewVScroll(diffWidget)
 
 	selectionHandler := func(selectedFile string) {
 		diffContent := diff.GetDiffForFile(selectedFile)
-		diff.SetDiffContent(diffContent, diffWidget)
+		// log.Print(diffContent)
+		diff.SetDiffContentForArray(diffContent, diffWidget)
 	}
 
 	statusWidget := status.NewFilesStatusWidget(fileStatus, selectionHandler)

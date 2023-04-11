@@ -49,7 +49,9 @@ index 366a602..91c8c62 100644
 +	// grid.Rows[2].Cells[0].Style = white
 +	// grid.Rows[2].Cells[1].Style = black
 +	// grid.Rows[2].Cells[2].Style = white
-+	// grid.Rows[2].Cells[3].Style = black
++	// grid.Rows[2].Cells[3].Style = blackdasd
+
+sdsad
 +	// grid.Rows[2].Cells[4].Style = white
 +
 +	grid.ShowLineNumbers = true
