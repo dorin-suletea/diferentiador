@@ -27,7 +27,7 @@ func (t *Ticker) Print() {
 		prevTime := 0
 		if i != 0 {
 			prevTime = tick.timeSec
+			log.Printf("-> %d tag=%s, duration=%d", i, tick.tag, tick.timeSec-prevTime)
 		}
-		log.Printf("-> %d tag=%s, duration=%d", i, tick.tag, tick.timeSec-prevTime)
 	}
 }

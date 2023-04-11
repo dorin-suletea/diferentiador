@@ -39,7 +39,7 @@ index 366a602..91c8c62 100644
 +	rowAdded := widget.CustomTextGridStyle{BGColor: &color.NRGBA{R: 64, G: 192, B: 64, A: 128}}
 +	rowRemoved := widget.CustomTextGridStyle{BGColor: &color.NRGBA{R: 192, G: 64, B: 64, A: 128}}
 +
-+	// grid := widget.NewTextGridFromString(diff)
++	// grid := widget.NewTextGridFromString(d   iff)
 +	// grid.SetStyleRange(0, 4, 0, 7, &widget.CustomTextGridStyle{BGColor: &color.NRGBA{R: 64, G: 64, B: 192, A: 128}})
 +	grid.SetRowStyle(1, &rowAdded)
 +	grid.SetRowStyle(3, &rowRemoved)
