@@ -105,7 +105,6 @@ func (t *TextArray) Resize(size fyne.Size) {
 // Tab characters are padded with spaces to the next tab stop.
 func (t *TextArray) SetText(text string) {
 	ti := internal.NewSingleUseTicker()
-	ti.Tick("start")
 	lines := strings.Split(text, "\n")
 	rows := make([]TextGridRow, len(lines))
 	for i, line := range lines {
@@ -122,10 +121,8 @@ func (t *TextArray) SetText(text string) {
 		}
 		rows[i] = TextGridRow{Cells: cells}
 	}
-	ti.Tick("iteration")
 	t.Rows = rows
 	t.BaseWidget.Refresh()
-	ti.Tick("refresh")
 	ti.Print()
 }
 
@@ -202,6 +199,7 @@ func (t *TextArray) RowText(row int) string {
 // If the row is beyond the end of the current buffer it will be expanded.
 // Tab characters are not padded with spaces.
 func (t *TextArray) SetRow(row int, content TextGridRow) {
+	ti := internal.NewSingleUseTicker()
 	if row < 0 {
 		return
 	}
@@ -213,6 +211,8 @@ func (t *TextArray) SetRow(row int, content TextGridRow) {
 	for col := 0; col > len(content.Cells); col++ {
 		t.refreshCell(row, col)
 	}
+	ti.Tick("SetRow")
+	ti.Print()
 }
 
 // SetRowStyle sets a grid style to all the cells cell at the specified row.
@@ -301,13 +301,15 @@ func (t *TextArray) SetStyleRange(startRow, startCol, endRow, endCol int, style 
 
 // CreateRenderer is a private method to Fyne which links this widget to it's renderer
 func (t *TextArray) CreateRenderer() fyne.WidgetRenderer {
+	ti := internal.NewSingleUseTicker()
 	t.BaseWidget.ExtendBaseWidget(t)
 	render := &textGridRenderer{text: t}
 	render.updateCellSize()
 
 	TextGridStyleDefault = &CustomTextGridStyle{}
 	TextGridStyleWhitespace = &CustomTextGridStyle{FGColor: theme.DisabledColor()}
-
+	ti.Tick("create rendered")
+	ti.Print()
 	return render
 }
 
@@ -368,6 +370,7 @@ func (t *textGridRenderer) appendTextCell(str rune) {
 }
 
 func (t *textGridRenderer) refreshCell(row, col int) {
+	ti := internal.NewSingleUseTicker()
 	pos := row*t.cols + col
 	if pos*2+1 >= len(t.objects) {
 		return
@@ -375,6 +378,8 @@ func (t *textGridRenderer) refreshCell(row, col int) {
 
 	cell := t.text.Rows[row].Cells[col]
 	t.setCellRune(cell.Rune, pos, cell.Style, t.text.Rows[row].Style)
+	ti.Tick("refreshCell")
+	ti.Print()
 }
 
 func (t *textGridRenderer) setCellRune(str rune, pos int, style, rowStyle TextGridStyle) {
@@ -415,6 +420,7 @@ func (t *textGridRenderer) addCellsIfRequired() {
 }
 
 func (t *textGridRenderer) refreshGrid() {
+	ti := internal.NewSingleUseTicker()
 	line := 1
 	x := 0
 
@@ -476,6 +482,8 @@ func (t *textGridRenderer) refreshGrid() {
 	for ; x < len(t.objects)/2; x++ {
 		t.setCellRune(' ', x, TextGridStyleDefault, nil) // trailing cells and blank lines
 	}
+	ti.Tick("refreshGrid")
+	ti.Print()
 }
 
 // tabWidth either returns the set tab width or if not set the returns the DefaultTabWidth
@@ -543,11 +551,14 @@ func (t *textGridRenderer) MinSize() fyne.Size {
 
 func (t *textGridRenderer) Refresh() {
 	// theme could change text size
+	ti := internal.NewSingleUseTicker()
 	t.updateCellSize()
 
 	TextGridStyleWhitespace = &CustomTextGridStyle{FGColor: theme.DisabledColor()}
 	t.updateGridSize(t.text.Size())
 	t.refreshGrid()
+	ti.Tick("refresh")
+	ti.Print()
 }
 
 func (t *textGridRenderer) ApplyTheme() {

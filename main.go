@@ -27,7 +27,6 @@ func main() {
 	// diffWidget := diff.NewEmptyDiffWidget()
 	diffWidget := diff.NewEmptyDiffWidgetTextArray()
 	scrollableDiffWidget := container.NewVScroll(diffWidget)
-
 	selectionHandler := func(selectedFile string) {
 		diffContent := diff.GetDiffForFile(selectedFile)
 		diff.SetDiffContentForArray(diffContent, diffWidget)

@@ -57,4 +57,5 @@ func appyStlingForArray(mutableGrid *TextArray, content string) {
 			mutableGrid.SetRowStyle(index, &rowAdded)
 		}
 	}
+	// mutableGrid.Refresh()
 }
