@@ -5,6 +5,6 @@ import (
 )
 
 func GetDiffForFile(filePath string) string {
-	rawGitDiff := internal.RunCmd("git", "diff", "-U50", "main.go")
+	rawGitDiff := internal.RunCmd("git", "diff", "-U50", filePath)
 	return rawGitDiff
 }
