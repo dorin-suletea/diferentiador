@@ -33,12 +33,3 @@ func (f *Focusable) Forcus(globalFocusables []*Focusable) {
 	}
 	f.hasFocus = true
 }
-
-// func (f *Focusable) DrawableComponent() {
-// 	borderBox := container.NewBorder(canvas.NewLine(ui.Green), canvas.NewLine(ui.Green), canvas.NewLine(ui.Green), canvas.NewLine(ui.Green), box)
-// }
-
-// func (f *Focusable) NestedComponent() {
-
-// 	borderBox := container.NewBorder(canvas.NewLine(ui.Green), canvas.NewLine(ui.Green), canvas.NewLine(ui.Green), canvas.NewLine(ui.Green), box)
-// }

@@ -61,18 +61,17 @@ func main() {
 		status.HandleSelection(fileStatus[0], onMutatedHandler, onDeletedHandler, onUntrackedHandler)
 	}
 
-	// TODO : figure out focus and tabbing betwen containers
-	// borderedContent := container.NewBorder(ui.NewBorderLine(), ui.NewBorderLine(), ui.NewBorderLine(), ui.NewBorderLine(), scrollableDiffWidget)
+	// TODO : tabbing betwen containers
 	fStatus := ui.NewFocusable(statusWidget)
 	fDiff := ui.NewFocusable(scrollableDiffWidget)
 	focus = append(focus, fStatus, fDiff)
 
+	// TODO : trigger on tab
 	fStatus.Forcus(focus)
 
 	split := container.NewHSplit(*fStatus.DrawableComponent(), *fDiff.DrawableComponent())
 	split.Offset = 0.2
 	window.SetContent(split)
 
-	// window.Canvas().Refresh(window.Content())
 	window.ShowAndRun()
 }
