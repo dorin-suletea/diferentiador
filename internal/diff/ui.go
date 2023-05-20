@@ -14,7 +14,7 @@ func NewDiffWidget(content string) *fyne.Container {
 	green := &color.NRGBA{R: 64, G: 192, B: 64, A: 128}
 	red := &color.NRGBA{R: 192, G: 64, B: 64, A: 128}
 	gray := &color.NRGBA{R: 96, G: 96, B: 96, A: 255}
-	font := fyne.TextStyle{Italic: true, Monospace: true}
+	font := fyne.TextStyle{Monospace: true}
 
 	uiLines := []*canvas.Text{}
 	for _, line := range strings.Split(strings.TrimSuffix(content, "\n"), "\n") {

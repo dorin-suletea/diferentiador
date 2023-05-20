@@ -18,17 +18,17 @@ var (
 type customTheme struct {
 }
 
-func (customTheme) Color(c fyne.ThemeColorName, _ fyne.ThemeVariant) color.Color {
+func (customTheme) Color(c fyne.ThemeColorName, v fyne.ThemeVariant) color.Color {
 	switch c {
-	case theme.ColorNameButton:
-		return darkGray
-	case theme.ColorNameForeground: // button text color
-		return darkOrange
+	// case theme.ColorNameButton:
+	// 	return darkGray
+	// case theme.ColorNameForeground: // button text color
+	// 	return darkOrange
 
-	case theme.ColorNameBackground:
-		return darkGray
-	case theme.ColorNamePrimary, theme.ColorNameHover, theme.ColorNameFocus:
-		return purple
+	// case theme.ColorNameBackground:
+	// 	return darkGray
+	// case theme.ColorNamePrimary, theme.ColorNameHover, theme.ColorNameFocus:
+	// 	return purple
 
 	// case theme.ColorNameDisabled:
 	// 	return color.Black
@@ -37,8 +37,11 @@ func (customTheme) Color(c fyne.ThemeColorName, _ fyne.ThemeVariant) color.Color
 
 	// case theme.ColorNameShadow:
 	// 	return &color.RGBA{R: 0xcc, G: 0xcc, B: 0xcc, A: 0xcc}
+
+	case "scrollBar":
+		return purple
 	default:
-		return color.White
+		return theme.LightTheme().Color(c, v)
 	}
 }
 
@@ -47,7 +50,7 @@ func (customTheme) Font(style fyne.TextStyle) fyne.Resource {
 }
 
 func (customTheme) Icon(n fyne.ThemeIconName) fyne.Resource {
-	return theme.DefaultTheme().Icon(n)
+	return theme.DarkTheme().Icon(n)
 }
 
 func (customTheme) Size(s fyne.ThemeSizeName) float32 {

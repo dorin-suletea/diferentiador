@@ -14,11 +14,12 @@ import (
 	"github.com/dorin-suletea/diferentiador~/internal/status"
 )
 
-type myTheme struct{}
-
 func main() {
 	app := app.NewWithID("xdiff")
 	app.SetIcon(theme.FyneLogo())
+	// app.Settings().SetTheme(ui.NewCustomTheme())
+	app.Settings().SetTheme(theme.DefaultTheme())
+
 	window := app.NewWindow("xdiff")
 	// TODO : open maximised
 	window.Resize(fyne.NewSize(1920, 1080))
