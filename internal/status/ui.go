@@ -8,6 +8,7 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"github.com/dorin-suletea/diferentiador~/ui"
 )
 
 type SelectionHandler func(string)
@@ -20,7 +21,7 @@ func NewFilesStatusWidget(data []FileStatus, onSelectMutated SelectionHandler, o
 		func() fyne.CanvasObject {
 			placeholderStatusIcon := widget.NewIcon(theme.ConfirmIcon())
 			placeholderFileName := widget.NewLabel("")
-			placeholderFileName.TextStyle = fyne.TextStyle{Monospace: true}
+			placeholderFileName.TextStyle = ui.FontMono
 
 			return container.New(layout.NewHBoxLayout(), placeholderStatusIcon, placeholderFileName, layout.NewSpacer())
 		},
@@ -35,8 +36,6 @@ func NewFilesStatusWidget(data []FileStatus, onSelectMutated SelectionHandler, o
 			}
 			(container.Objects[0].(*widget.Icon)).SetResource(resource)
 			(container.Objects[1].(*widget.Label)).SetText(data[i].fileName)
-			// container.Objects[0].Resize(fyne.NewSize(10, container.Objects[0].Size().Width))
-			container.Objects[1].Resize(fyne.NewSize(5, container.Objects[1].Size().Width))
 		})
 	list.OnSelected = func(i widget.ListItemID) {
 		HandleSelection(data[i], onSelectMutated, onSelectDeleted, onSelectUntracked)
