@@ -20,8 +20,7 @@ func NewFilesStatusWidget(data []FileStatus, onSelectMutated SelectionHandler, o
 		func() fyne.CanvasObject {
 			placeholderStatusIcon := widget.NewIcon(theme.ConfirmIcon())
 			placeholderFileName := widget.NewLabel("")
-			testButton := widget.NewButton("Select", func() {})
-			return container.New(layout.NewHBoxLayout(), placeholderStatusIcon, placeholderFileName, layout.NewSpacer(), testButton)
+			return container.New(layout.NewHBoxLayout(), placeholderStatusIcon, placeholderFileName, layout.NewSpacer())
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
 			container := o.(*fyne.Container)
@@ -33,20 +32,23 @@ func NewFilesStatusWidget(data []FileStatus, onSelectMutated SelectionHandler, o
 				resource = theme.ContentRemoveIcon()
 			}
 			(container.Objects[0].(*widget.Icon)).SetResource(resource)
-			// file path
 			(container.Objects[1].(*widget.Label)).SetText(data[i].fileName)
-			(container.Objects[3].(*widget.Button)).OnTapped = func() {
-				switch data[i].status {
-				case Deleted:
-					onSelectDeleted(data[i].fileName)
-				case Untracked:
-					onSelectUntracked(data[i].fileName)
-				default:
-					onSelectMutated(data[i].fileName)
-				}
-			}
 		})
+	list.OnSelected = func(i widget.ListItemID) {
+		HandleSelection(data[i], onSelectMutated, onSelectDeleted, onSelectUntracked)
+	}
 	return list
+}
+
+func HandleSelection(selected FileStatus, onSelectMutated SelectionHandler, onSelectDeleted SelectionHandler, onSelectUntracked SelectionHandler) {
+	switch selected.status {
+	case Deleted:
+		onSelectDeleted(selected.fileName)
+	case Untracked:
+		onSelectUntracked(selected.fileName)
+	default:
+		onSelectMutated(selected.fileName)
+	}
 }
 
 func loadIcon(relativePath string) (fyne.Resource, error) {

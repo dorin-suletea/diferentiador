@@ -20,34 +20,45 @@ func main() {
 	app := app.NewWithID("xdiff")
 	app.SetIcon(theme.FyneLogo())
 	window := app.NewWindow("xdiff")
+	// TODO : open maximised
+	window.Resize(fyne.NewSize(1920, 1080))
 
+	// TODO : start a cron to eagerly pre-create all these widgets
 	fileStatus := status.GetStatusForFiles()
 	scrollableDiffWidget := container.NewScroll(container.NewVBox())
-	onMutatedHandler := func(selectedFile string) {
-		diffContent := diff.GetDiffForFile(selectedFile)
-		scrollableDiffWidget.Content = diff.NewDiffWidget(diffContent)
+
+	genericSelectionHandler := func(content string, scrollContainer *container.Scroll) {
+		contentBox := diff.NewDiffWidget(content)
+		scrollableDiffWidget.Content = contentBox
+
 		scrollableDiffWidget.Refresh()
+		contentBox.Refresh()
+	}
+
+	onMutatedHandler := func(selectedFile string) {
+		content := diff.GetDiffForFile(selectedFile)
+		genericSelectionHandler(content, scrollableDiffWidget)
 	}
 	onDeletedHandler := func(selectedFile string) {
-		headContent := diff.GetHeadForFile(selectedFile)
-		markedHeadContent := diff.MarkLines(headContent, '+')
-		scrollableDiffWidget.Content = diff.NewDiffWidget(markedHeadContent)
-		scrollableDiffWidget.Refresh()
+		content := diff.MarkLines(diff.GetHeadForFile(selectedFile), '-')
+		genericSelectionHandler(content, scrollableDiffWidget)
 	}
 	onUntrackedHandler := func(selectedFile string) {
-		diffContent := diff.GetRawFileContents(selectedFile)
-		markedDiffContent := diff.MarkLines(diffContent, '+')
-		scrollableDiffWidget.Content = diff.NewDiffWidget(markedDiffContent)
-		scrollableDiffWidget.Refresh()
+		content := diff.GetRawFileContents(selectedFile)
+		genericSelectionHandler(content, scrollableDiffWidget)
 	}
 
 	statusWidget := status.NewFilesStatusWidget(fileStatus, onMutatedHandler, onDeletedHandler, onUntrackedHandler)
 
+	// Auto-select first file
+	if len(fileStatus) != 0 {
+		status.HandleSelection(fileStatus[0], onMutatedHandler, onDeletedHandler, onUntrackedHandler)
+	}
+
 	split := container.NewHSplit(statusWidget, scrollableDiffWidget)
 	split.Offset = 0.2
-
 	window.SetContent(split)
 
-	window.Resize(fyne.NewSize(1040, 460))
+	// window.Canvas().Refresh(window.Content())
 	window.ShowAndRun()
 }
