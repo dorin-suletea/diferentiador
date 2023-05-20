@@ -1,61 +1,65 @@
 package diff
 
 import (
+	"bytes"
 	"image/color"
 	"strings"
 
-	"fyne.io/fyne/v2/widget"
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
+	"fyne.io/fyne/v2/container"
 )
 
-func NewEmptyDiffWidgetTextArray() *TextArray {
-	grid := NewTextArrayFromString("")
-	grid.ShowLineNumbers = true
-	grid.ShowWhitespace = true
-	return grid
-}
+func NewDiffWidget(content string) *fyne.Container {
+	green := &color.NRGBA{R: 64, G: 192, B: 64, A: 128}
+	red := &color.NRGBA{R: 192, G: 64, B: 64, A: 128}
+	gray := &color.NRGBA{R: 96, G: 96, B: 96, A: 255}
+	font := fyne.TextStyle{Italic: true, Monospace: true}
 
-func NewEmptyDiffWidget() *widget.TextGrid {
-	grid := widget.NewTextGridFromString("")
-	grid.ShowLineNumbers = true
-	grid.ShowWhitespace = true
-	return grid
-}
+	uiLines := []*canvas.Text{}
+	for _, line := range strings.Split(strings.TrimSuffix(content, "\n"), "\n") {
 
-func SetDiffContentForArray(diffContent string, mutableDiffWidget *TextArray) {
-	mutableDiffWidget.SetText(diffContent)
-	appyStlingForArray(mutableDiffWidget, diffContent)
-}
-
-func SetDiffContent(diffContent string, mutableDiffWidget *widget.TextGrid) {
-	mutableDiffWidget.SetText(diffContent)
-	appyStlingForGrid(mutableDiffWidget, diffContent)
-}
-
-func appyStlingForGrid(mutableGrid *widget.TextGrid, content string) {
-	rowAdded := widget.CustomTextGridStyle{BGColor: &color.NRGBA{R: 64, G: 192, B: 64, A: 128}}
-	rowRemoved := widget.CustomTextGridStyle{BGColor: &color.NRGBA{R: 192, G: 64, B: 64, A: 128}}
-
-	for index, line := range strings.Split(strings.TrimSuffix(content, "\n"), "\n") {
-		if line[0] == '-' {
-			mutableGrid.SetRowStyle(index, &rowRemoved)
+		if len(line) == 0 {
+			tw := canvas.NewText(line, gray)
+			uiLines = append(uiLines, tw)
+			continue
 		}
-		if line[0] == '+' {
-			mutableGrid.SetRowStyle(index, &rowAdded)
+
+		switch line[0] {
+		case '-':
+			tw := canvas.NewText(line, red)
+			tw.TextStyle = font
+			uiLines = append(uiLines, tw)
+		case '+':
+			tw := canvas.NewText(line, green)
+			tw.TextStyle = font
+			uiLines = append(uiLines, tw)
+		default:
+			tw := canvas.NewText(line, gray)
+			tw.TextStyle = font
+			uiLines = append(uiLines, tw)
 		}
 	}
+
+	asCanvas := make([]fyne.CanvasObject, len(uiLines))
+	for i, val := range uiLines {
+		asCanvas[i] = val
+	}
+	box := container.NewVBox(asCanvas...)
+	return box
 }
 
-func appyStlingForArray(mutableGrid *TextArray, content string) {
-	rowAdded := widget.CustomTextGridStyle{BGColor: &color.NRGBA{R: 64, G: 192, B: 64, A: 128}}
-	rowRemoved := widget.CustomTextGridStyle{BGColor: &color.NRGBA{R: 192, G: 64, B: 64, A: 128}}
-
-	for index, line := range strings.Split(strings.TrimSuffix(content, "\n"), "\n") {
-		if line[0] == '-' {
-			mutableGrid.SetRowStyle(index, &rowRemoved)
-		}
-		if line[0] == '+' {
-			mutableGrid.SetRowStyle(index, &rowAdded)
-		}
+/*
+	Prefixed all lines of a given \n separated string.
+	This is useful to mark all lines of a deleted file with '-' and with '+' for an unstaged file.
+	While these are not technically line changes from a GIT perspective this provides useful feedback to the user.
+*/
+func MarkLines(content string, prefix byte) string {
+	prefixed := bytes.Buffer{}
+	for _, line := range strings.Split(strings.TrimSuffix(content, "\n"), "\n") {
+		prefixed.WriteByte(prefix)
+		prefixed.WriteString(line)
+		prefixed.WriteString("\n")
 	}
-	// mutableGrid.Refresh()
+	return prefixed.String()
 }

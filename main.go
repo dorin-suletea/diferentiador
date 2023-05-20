@@ -16,23 +16,32 @@ import (
 
 type myTheme struct{}
 
-// TODO : TextGrid is terribly slow as it can style each character
-// create a custom one with styling per row.
 func main() {
-	app := app.NewWithID("diferentiador")
+	app := app.NewWithID("xdiff")
 	app.SetIcon(theme.FyneLogo())
-	window := app.NewWindow("diferentiador")
+	window := app.NewWindow("xdiff")
 
 	fileStatus := status.GetStatusForFiles()
-	// diffWidget := diff.NewEmptyDiffWidget()
-	diffWidget := diff.NewEmptyDiffWidgetTextArray()
-	scrollableDiffWidget := container.NewVScroll(diffWidget)
-	selectionHandler := func(selectedFile string) {
+	scrollableDiffWidget := container.NewScroll(container.NewVBox())
+	onMutatedHandler := func(selectedFile string) {
 		diffContent := diff.GetDiffForFile(selectedFile)
-		diff.SetDiffContentForArray(diffContent, diffWidget)
+		scrollableDiffWidget.Content = diff.NewDiffWidget(diffContent)
+		scrollableDiffWidget.Refresh()
+	}
+	onDeletedHandler := func(selectedFile string) {
+		headContent := diff.GetHeadForFile(selectedFile)
+		markedHeadContent := diff.MarkLines(headContent, '+')
+		scrollableDiffWidget.Content = diff.NewDiffWidget(markedHeadContent)
+		scrollableDiffWidget.Refresh()
+	}
+	onUntrackedHandler := func(selectedFile string) {
+		diffContent := diff.GetRawFileContents(selectedFile)
+		markedDiffContent := diff.MarkLines(diffContent, '+')
+		scrollableDiffWidget.Content = diff.NewDiffWidget(markedDiffContent)
+		scrollableDiffWidget.Refresh()
 	}
 
-	statusWidget := status.NewFilesStatusWidget(fileStatus, selectionHandler)
+	statusWidget := status.NewFilesStatusWidget(fileStatus, onMutatedHandler, onDeletedHandler, onUntrackedHandler)
 
 	split := container.NewHSplit(statusWidget, scrollableDiffWidget)
 	split.Offset = 0.2

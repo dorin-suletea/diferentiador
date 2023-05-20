@@ -12,7 +12,7 @@ import (
 
 type SelectionHandler func(string)
 
-func NewFilesStatusWidget(data []FileStatus, selectionHandler SelectionHandler) *widget.List {
+func NewFilesStatusWidget(data []FileStatus, onSelectMutated SelectionHandler, onSelectDeleted SelectionHandler, onSelectUntracked SelectionHandler) *widget.List {
 	list := widget.NewList(
 		func() int {
 			return len(data)
@@ -36,7 +36,14 @@ func NewFilesStatusWidget(data []FileStatus, selectionHandler SelectionHandler) 
 			// file path
 			(container.Objects[1].(*widget.Label)).SetText(data[i].fileName)
 			(container.Objects[3].(*widget.Button)).OnTapped = func() {
-				selectionHandler(data[i].fileName)
+				switch data[i].status {
+				case Deleted:
+					onSelectDeleted(data[i].fileName)
+				case Untracked:
+					onSelectUntracked(data[i].fileName)
+				default:
+					onSelectMutated(data[i].fileName)
+				}
 			}
 		})
 	return list
