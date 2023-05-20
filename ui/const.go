@@ -12,6 +12,7 @@ var (
 	Red      = &color.NRGBA{R: 192, G: 64, B: 64, A: 128}
 	Gray     = &color.NRGBA{R: 96, G: 96, B: 96, A: 255}
 	FontMono = fyne.TextStyle{Monospace: true}
+	Focus    = Green
 )
 
 func NewBorderLine() *canvas.Line {
