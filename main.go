@@ -12,7 +12,12 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"github.com/dorin-suletea/diferentiador~/internal/diff"
 	"github.com/dorin-suletea/diferentiador~/internal/status"
+	"github.com/dorin-suletea/diferentiador~/ui"
 )
+
+var focus []*ui.Focusable = []*ui.Focusable{}
+
+// make([]*ui.Focusable, 0)
 
 func main() {
 	app := app.NewWithID("xdiff")
@@ -58,7 +63,13 @@ func main() {
 
 	// TODO : figure out focus and tabbing betwen containers
 	// borderedContent := container.NewBorder(ui.NewBorderLine(), ui.NewBorderLine(), ui.NewBorderLine(), ui.NewBorderLine(), scrollableDiffWidget)
-	split := container.NewHSplit(statusWidget, scrollableDiffWidget)
+	fStatus := ui.NewFocusable(statusWidget)
+	fDiff := ui.NewFocusable(scrollableDiffWidget)
+	focus = append(focus, fStatus, fDiff)
+
+	fStatus.Forcus(focus)
+
+	split := container.NewHSplit(*fStatus.DrawableComponent(), *fDiff.DrawableComponent())
 	split.Offset = 0.2
 	window.SetContent(split)
 

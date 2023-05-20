@@ -18,6 +18,6 @@ var (
 func NewBorderLine() *canvas.Line {
 	return &canvas.Line{
 		StrokeColor: Green,
-		StrokeWidth: 2,
+		StrokeWidth: 4,
 	}
 }
