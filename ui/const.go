@@ -14,6 +14,8 @@ var (
 	Red         = &color.NRGBA{R: 192, G: 64, B: 64, A: 128}
 	Gray        = &color.NRGBA{R: 96, G: 96, B: 96, A: 255}
 	FontMono    = fyne.TextStyle{Monospace: true}
+	FontHeight  = float32(21)
+	FontWidth   = float32(10)
 	Focus       = Green
 )
 
@@ -35,5 +37,8 @@ func NewUnfocusLine() *canvas.Line {
 
 var (
 	ShCycleFocus = &desktop.CustomShortcut{KeyName: fyne.KeyTab, Modifier: fyne.KeyModifierControl}
-	ShScrollDown = &desktop.CustomShortcut{KeyName: fyne.KeyDown, Modifier: fyne.KeyModifierControl}
+	ShArrowDown  = &desktop.CustomShortcut{KeyName: fyne.KeyDown, Modifier: fyne.KeyModifierControl}
+	ShArrowUp    = &desktop.CustomShortcut{KeyName: fyne.KeyUp, Modifier: fyne.KeyModifierControl}
+	ShArrowRight = &desktop.CustomShortcut{KeyName: fyne.KeyRight, Modifier: fyne.KeyModifierControl}
+	ShArrowLeft  = &desktop.CustomShortcut{KeyName: fyne.KeyLeft, Modifier: fyne.KeyModifierControl}
 )
