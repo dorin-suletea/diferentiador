@@ -6,6 +6,7 @@ package main
 //go run fyne.io/fyne/v2/cmd/fyne_demo@latest
 
 import (
+	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"github.com/dorin-suletea/diferentiador~/internal/diff"
 	"github.com/dorin-suletea/diferentiador~/internal/status"
@@ -18,14 +19,13 @@ func main() {
 	app := ui.NewApp()
 
 	// diff widget, center
-	diffWidget := container.NewScroll(container.NewVBox())
+	// diffWidget := container.NewScroll(container.NewVBox())
+	diffWidget := diff.NewDiffWidget([]fyne.CanvasObject{})
 
 	// file status bar, left
-	genericSelectionHandler := func(content string, scrollContainer *container.Scroll) {
-		contentBox := diff.NewDiffWidget(content)
-		diffWidget.Content = contentBox
-		diffWidget.Refresh()
-		contentBox.Refresh()
+	genericSelectionHandler := func(content string, scrollContainer *diff.DiffWidget) {
+		lineLabels := diff.ContentAsLabels(content)
+		diffWidget.SetContent(lineLabels)
 	}
 	onMutatedHandler := func(selectedFile string) {
 		content := diff.GetDiffForFile(selectedFile)
@@ -43,7 +43,7 @@ func main() {
 	statusWidget := container.NewScroll(status.NewFilesStatusWidget(status.GetStatusForFiles(), onMutatedHandler, onDeletedHandler, onUntrackedHandler))
 
 	app.AddComponent(ui.NewStatusWidget(statusWidget))
-	app.AddComponent(ui.NewDiffWidget(diffWidget))
+	app.AddComponent(diffWidget)
 
 	app.AddShortcut(ui.ShCycleFocus, func() { app.CycleFocus() })
 	app.AddShortcut(ui.ShArrowDown, func() { app.OnArrowDown() })

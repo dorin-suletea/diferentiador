@@ -18,19 +18,19 @@ type IComponent interface {
 	OnArrowLeft()
 }
 
-type component struct {
+type FocusComponent struct {
 	hasFocus  bool
 	focused   fyne.CanvasObject
 	unfocused fyne.CanvasObject
 }
 
-func newComponent(nested fyne.CanvasObject) *component {
+func NewFocusComponent(nested fyne.CanvasObject) *FocusComponent {
 	focused := container.NewBorder(NewFocusLine(), NewFocusLine(), NewFocusLine(), NewFocusLine(), nested)
 	unfocused := container.NewBorder(NewUnfocusLine(), NewUnfocusLine(), NewUnfocusLine(), NewUnfocusLine(), nested)
-	return &component{false, focused, unfocused}
+	return &FocusComponent{false, focused, unfocused}
 }
 
-func (f *component) GetDrawable() *fyne.CanvasObject {
+func (f *FocusComponent) GetDrawable() *fyne.CanvasObject {
 	if f.hasFocus {
 		return &f.focused
 	} else {
@@ -38,16 +38,16 @@ func (f *component) GetDrawable() *fyne.CanvasObject {
 	}
 }
 
-func (f *component) SetFocus(focus bool) {
+func (f *FocusComponent) SetFocus(focus bool) {
 	f.hasFocus = focus
 }
 
 type StatusWidget struct {
-	*component
+	*FocusComponent
 }
 
 func NewStatusWidget(nested *container.Scroll) *StatusWidget {
-	return &StatusWidget{newComponent(nested)}
+	return &StatusWidget{NewFocusComponent(nested)}
 }
 
 func (dw *StatusWidget) OnArrowDown() {
@@ -64,38 +64,6 @@ func (dw *StatusWidget) OnArrowRight() {
 
 func (dw *StatusWidget) OnArrowLeft() {
 	fmt.Println("left")
-}
-
-// ----------------------
-// File DiffWidgetController
-// ----------------------
-type DiffWidget struct {
-	*component
-	scroll *container.Scroll
-}
-
-func NewDiffWidget(nested *container.Scroll) *DiffWidget {
-	return &DiffWidget{newComponent(nested), nested}
-}
-
-func (dw *DiffWidget) OnArrowDown() {
-	dw.scroll.Offset.Y = dw.scroll.Offset.Y + FontHeight
-	dw.scroll.Refresh()
-}
-
-func (dw *DiffWidget) OnArrowUp() {
-	dw.scroll.Offset.Y = dw.scroll.Offset.Y - FontHeight
-	dw.scroll.Refresh()
-}
-
-func (dw *DiffWidget) OnArrowRight() {
-	dw.scroll.Offset.X = dw.scroll.Offset.X + FontWidth
-	dw.scroll.Refresh()
-}
-
-func (dw *DiffWidget) OnArrowLeft() {
-	dw.scroll.Offset.X = dw.scroll.Offset.X - FontWidth
-	dw.scroll.Refresh()
 }
 
 // ----------------------
@@ -118,12 +86,13 @@ func NewApp() *App {
 	return &App{topLevelComponents, window, 0}
 }
 
-func (a *App) AddComponent(c IComponent) {
+func (a *App) AddComponent(c IComponent) IComponent {
 	a.components = append(a.components, c)
 	// focus the first added component on startup
 	if len(a.components) == 1 {
 		a.components[0].SetFocus(true)
 	}
+	return a.components[len(a.components)-1]
 }
 
 func (a *App) ShowAndRun() {
