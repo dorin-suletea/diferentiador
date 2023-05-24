@@ -7,7 +7,6 @@ package main
 
 import (
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/container"
 	"github.com/dorin-suletea/diferentiador~/internal/diff"
 	"github.com/dorin-suletea/diferentiador~/internal/status"
 	"github.com/dorin-suletea/diferentiador~/ui"
@@ -40,9 +39,9 @@ func main() {
 		genericSelectionHandler(content, diffWidget)
 	}
 
-	statusWidget := container.NewScroll(status.NewFilesStatusWidget(status.GetStatusForFiles(), onMutatedHandler, onDeletedHandler, onUntrackedHandler))
+	statusWidget := status.NewStatusWidget(status.GetStatusForFiles(), onMutatedHandler, onDeletedHandler, onUntrackedHandler)
 
-	app.AddComponent(ui.NewStatusWidget(statusWidget))
+	app.AddComponent(statusWidget)
 	app.AddComponent(diffWidget)
 
 	app.AddShortcut(ui.ShCycleFocus, func() { app.CycleFocus() })

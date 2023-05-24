@@ -1,8 +1,6 @@
 package ui
 
 import (
-	"fmt"
-
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
@@ -40,30 +38,6 @@ func (f *FocusComponent) GetDrawable() *fyne.CanvasObject {
 
 func (f *FocusComponent) SetFocus(focus bool) {
 	f.hasFocus = focus
-}
-
-type StatusWidget struct {
-	*FocusComponent
-}
-
-func NewStatusWidget(nested *container.Scroll) *StatusWidget {
-	return &StatusWidget{NewFocusComponent(nested)}
-}
-
-func (dw *StatusWidget) OnArrowDown() {
-	fmt.Println("Down")
-}
-
-func (dw *StatusWidget) OnArrowUp() {
-	fmt.Println("Up")
-}
-
-func (dw *StatusWidget) OnArrowRight() {
-	fmt.Println("right")
-}
-
-func (dw *StatusWidget) OnArrowLeft() {
-	fmt.Println("left")
 }
 
 // ----------------------

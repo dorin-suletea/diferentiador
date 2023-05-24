@@ -13,7 +13,7 @@ import (
 
 type SelectionHandler func(string)
 
-func NewFilesStatusWidget(data []FileStatus, onSelectMutated SelectionHandler, onSelectDeleted SelectionHandler, onSelectUntracked SelectionHandler) *widget.List {
+func newFilesStatusList(data []FileStatus, onSelectMutated SelectionHandler, onSelectDeleted SelectionHandler, onSelectUntracked SelectionHandler) *widget.List {
 	list := widget.NewList(
 		func() int {
 			return len(data)
@@ -38,13 +38,14 @@ func NewFilesStatusWidget(data []FileStatus, onSelectMutated SelectionHandler, o
 			(container.Objects[1].(*widget.Label)).SetText(data[i].fileName)
 		})
 	list.OnSelected = func(i widget.ListItemID) {
-		HandleSelection(data[i], onSelectMutated, onSelectDeleted, onSelectUntracked)
+		handleSelection(data[i], onSelectMutated, onSelectDeleted, onSelectUntracked)
+		// TODO : this must update the selection index in the widget
 	}
 
 	return list
 }
 
-func HandleSelection(selected FileStatus, onSelectMutated SelectionHandler, onSelectDeleted SelectionHandler, onSelectUntracked SelectionHandler) {
+func handleSelection(selected FileStatus, onSelectMutated SelectionHandler, onSelectDeleted SelectionHandler, onSelectUntracked SelectionHandler) {
 	switch selected.status {
 	case Deleted:
 		onSelectDeleted(selected.fileName)
@@ -80,4 +81,58 @@ func pickIconPath(item FileStatus) string {
 		return "res/red_question.png"
 	}
 	return ""
+}
+
+// ----------------------
+// StatusWidget
+// ----------------------
+type StatusWidget struct {
+	*ui.FocusComponent
+	scroll            *container.Scroll
+	nestedList        *widget.List
+	selectionIndex    int
+	data              []FileStatus
+	onSelectMutated   SelectionHandler
+	onSelectDeleted   SelectionHandler
+	onSelectUntracked SelectionHandler
+}
+
+func NewStatusWidget(data []FileStatus, onSelectMutated SelectionHandler, onSelectDeleted SelectionHandler, onSelectUntracked SelectionHandler) *StatusWidget {
+	list := newFilesStatusList(data, onSelectMutated, onSelectDeleted, onSelectUntracked)
+	scroll := container.NewScroll(list)
+
+	ret := &StatusWidget{ui.NewFocusComponent(scroll), scroll, list, 0, data, onSelectMutated, onSelectDeleted, onSelectUntracked}
+	if len(data) != 0 {
+		ret.selectItem(0)
+	}
+	return ret
+}
+
+func (dw *StatusWidget) OnArrowDown() {
+	dw.selectionIndex = (dw.selectionIndex + 1) % len(dw.data)
+	dw.selectItem(dw.selectionIndex)
+}
+
+func (dw *StatusWidget) OnArrowUp() {
+	newIndex := dw.selectionIndex - 1
+
+	if newIndex >= 0 {
+		dw.selectionIndex = newIndex
+	} else {
+		dw.selectionIndex = len(dw.data) + newIndex
+	}
+	dw.selectItem(dw.selectionIndex)
+}
+
+func (dw *StatusWidget) OnArrowRight() {
+	fmt.Println("right")
+}
+
+func (dw *StatusWidget) OnArrowLeft() {
+	fmt.Println("left")
+}
+
+func (dw *StatusWidget) selectItem(index int) {
+	handleSelection(dw.data[index], dw.onSelectMutated, dw.onSelectDeleted, dw.onSelectDeleted)
+	dw.nestedList.Select(index)
 }

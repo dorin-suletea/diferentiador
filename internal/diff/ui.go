@@ -10,8 +10,6 @@ import (
 	"github.com/dorin-suletea/diferentiador~/ui"
 )
 
-// *fyne.Container
-// box := container.NewVBox(asCanvas...)
 func ContentAsLabels(content string) []fyne.CanvasObject {
 
 	uiLines := []*canvas.Text{}
