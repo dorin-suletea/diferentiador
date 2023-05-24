@@ -40,6 +40,7 @@ func NewFilesStatusWidget(data []FileStatus, onSelectMutated SelectionHandler, o
 	list.OnSelected = func(i widget.ListItemID) {
 		HandleSelection(data[i], onSelectMutated, onSelectDeleted, onSelectUntracked)
 	}
+
 	return list
 }
 

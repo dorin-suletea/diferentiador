@@ -14,8 +14,8 @@ func GetDiffForFile(filePath string) string {
 }
 
 /*
-	Useful for dusplaying untracked files.
-	`git diff --no-index /dev/null myFilePath` is not portable so will read the file as-is similar to `cat`
+Useful for dusplaying untracked files.
+`git diff --no-index /dev/null myFilePath` is not portable so will read the file as-is similar to `cat`
 */
 func GetRawFileContents(filePath string) string {
 	file, err := os.Open(filePath)

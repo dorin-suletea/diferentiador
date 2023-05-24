@@ -36,7 +36,7 @@ func NewUnfocusLine() *canvas.Line {
 }
 
 var (
-	ShCycleFocus = &desktop.CustomShortcut{KeyName: fyne.KeyTab, Modifier: fyne.KeyModifierControl}
+	ShCycleFocus = &desktop.CustomShortcut{KeyName: fyne.KeySlash, Modifier: fyne.KeyModifierControl}
 	ShArrowDown  = &desktop.CustomShortcut{KeyName: fyne.KeyDown, Modifier: fyne.KeyModifierControl}
 	ShArrowUp    = &desktop.CustomShortcut{KeyName: fyne.KeyUp, Modifier: fyne.KeyModifierControl}
 	ShArrowRight = &desktop.CustomShortcut{KeyName: fyne.KeyRight, Modifier: fyne.KeyModifierControl}

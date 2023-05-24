@@ -92,6 +92,7 @@ func (a *App) AddComponent(c IComponent) IComponent {
 	if len(a.components) == 1 {
 		a.components[0].SetFocus(true)
 	}
+	a.window.Canvas().FocusPrevious()
 	return a.components[len(a.components)-1]
 }
 
