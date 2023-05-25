@@ -41,6 +41,8 @@ func main() {
 
 	statusWidget := status.NewStatusWidget(status.GetStatusForFiles(), onMutatedHandler, onDeletedHandler, onUntrackedHandler)
 
+	diff.NewGitDiffCache(status.GetStatusForFiles())
+
 	app.AddComponent(statusWidget)
 	app.AddComponent(diffWidget)
 

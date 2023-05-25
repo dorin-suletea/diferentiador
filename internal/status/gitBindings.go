@@ -54,7 +54,7 @@ func GetStatusForFiles() []FileStatus {
 }
 
 type FileStatus struct {
-	fileName string
+	FilePath string
 	staged   bool
 	status   Status
 }

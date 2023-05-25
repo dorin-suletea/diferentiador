@@ -35,7 +35,7 @@ func newFilesStatusList(data []FileStatus, onSelectMutated SelectionHandler, onS
 				resource = theme.ContentRemoveIcon()
 			}
 			(container.Objects[0].(*widget.Icon)).SetResource(resource)
-			(container.Objects[1].(*widget.Label)).SetText(data[i].fileName)
+			(container.Objects[1].(*widget.Label)).SetText(data[i].FilePath)
 		})
 	return list
 }
@@ -43,11 +43,11 @@ func newFilesStatusList(data []FileStatus, onSelectMutated SelectionHandler, onS
 func handleSelection(selected FileStatus, onSelectMutated SelectionHandler, onSelectDeleted SelectionHandler, onSelectUntracked SelectionHandler) {
 	switch selected.status {
 	case Deleted:
-		onSelectDeleted(selected.fileName)
+		onSelectDeleted(selected.FilePath)
 	case Untracked:
-		onSelectUntracked(selected.fileName)
+		onSelectUntracked(selected.FilePath)
 	default:
-		onSelectMutated(selected.fileName)
+		onSelectMutated(selected.FilePath)
 	}
 }
 
