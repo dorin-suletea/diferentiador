@@ -82,7 +82,6 @@ func (dw *DiffWidget) SetContent(lineLabels []fyne.CanvasObject) {
 
 func (dw *DiffWidget) OnArrowDown() {
 	dw.scroll.Offset.Y = dw.scroll.Offset.Y + ui.FontHeight
-	println(dw.scroll.Offset.Y)
 	dw.scroll.Refresh()
 }
 

@@ -16,7 +16,7 @@ const (
 )
 
 func GetStatusForFiles() []FileStatus {
-	// split output into lines
+	// split output into  lines
 	rawGitStatus := internal.RunCmd("git", "status", "-s", "-u")
 	lines := filterEmptyLines(strings.Split(rawGitStatus, "\n"))
 

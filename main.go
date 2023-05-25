@@ -49,17 +49,7 @@ func main() {
 	app.AddShortcut(ui.ShArrowUp, func() { app.OnArrowUp() })
 	app.AddShortcut(ui.ShArrowRight, func() { app.OnArrowRight() })
 	app.AddShortcut(ui.ShArrowLeft, func() { app.OnArrowLeft() })
-
-	// app.Window().Canvas().AddShortcut(ui.ShCycleFocus, func(shortcut fyne.Shortcut) {
-	// 	currentFocusIndex = (currentFocusIndex + 1) % len(focus)
-	// 	focus[currentFocusIndex].Forcus(focus)
-	// 	setupSplit(w)
-
-	// 	fmt.Println(focus[currentFocusIndex].HasFocus)
-	// })
-
 	app.ShowAndRun()
-
 }
 
 // var focus []*ui.Focusable = []*ui.Focusable{}

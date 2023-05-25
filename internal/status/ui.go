@@ -37,11 +37,6 @@ func newFilesStatusList(data []FileStatus, onSelectMutated SelectionHandler, onS
 			(container.Objects[0].(*widget.Icon)).SetResource(resource)
 			(container.Objects[1].(*widget.Label)).SetText(data[i].fileName)
 		})
-	list.OnSelected = func(i widget.ListItemID) {
-		handleSelection(data[i], onSelectMutated, onSelectDeleted, onSelectUntracked)
-		// TODO : this must update the selection index in the widget
-	}
-
 	return list
 }
 
@@ -99,13 +94,25 @@ type StatusWidget struct {
 
 func NewStatusWidget(data []FileStatus, onSelectMutated SelectionHandler, onSelectDeleted SelectionHandler, onSelectUntracked SelectionHandler) *StatusWidget {
 	list := newFilesStatusList(data, onSelectMutated, onSelectDeleted, onSelectUntracked)
+
 	scroll := container.NewScroll(list)
 
 	ret := &StatusWidget{ui.NewFocusComponent(scroll), scroll, list, 0, data, onSelectMutated, onSelectDeleted, onSelectUntracked}
 	if len(data) != 0 {
 		ret.selectItem(0)
 	}
+
+	// update selectionIndex on click
+	list.OnSelected = func(i widget.ListItemID) {
+		handleSelection(data[i], onSelectMutated, onSelectDeleted, onSelectUntracked)
+		ret.selectionIndex = i
+	}
+
 	return ret
+}
+
+func (dw *StatusWidget) InitHandlers() {
+
 }
 
 func (dw *StatusWidget) OnArrowDown() {
