@@ -1,7 +1,6 @@
 package diff
 
 import (
-	"bytes"
 	"strings"
 
 	"fyne.io/fyne/v2"
@@ -42,21 +41,6 @@ func ContentAsLabels(content string) []fyne.CanvasObject {
 		asCanvas[i] = val
 	}
 	return asCanvas
-}
-
-/*
-Prefixed all lines of a given \n separated string.
-This is useful to mark all lines of a deleted file with '-' and with '+' for an unstaged file.
-While these are not technically line changes from a GIT perspective this provides useful feedback to the user.
-*/
-func MarkLines(content string, prefix byte) string {
-	prefixed := bytes.Buffer{}
-	for _, line := range strings.Split(strings.TrimSuffix(content, "\n"), "\n") {
-		prefixed.WriteByte(prefix)
-		prefixed.WriteString(line)
-		prefixed.WriteString("\n")
-	}
-	return prefixed.String()
 }
 
 // ----------------------

@@ -56,7 +56,7 @@ func GetStatusForFiles() []FileStatus {
 type FileStatus struct {
 	FilePath string
 	staged   bool
-	status   Status
+	Status   Status
 }
 
 // git exec commands have a trailing line at the end, filter it out

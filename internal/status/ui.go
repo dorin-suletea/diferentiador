@@ -11,9 +11,9 @@ import (
 	"github.com/dorin-suletea/diferentiador~/ui"
 )
 
-type SelectionHandler func(string)
+type SelectionHandler func(FileStatus)
 
-func newFilesStatusList(data []FileStatus, onSelectMutated SelectionHandler, onSelectDeleted SelectionHandler, onSelectUntracked SelectionHandler) *widget.List {
+func newFilesStatusList(data []FileStatus, onSelected SelectionHandler) *widget.List {
 	list := widget.NewList(
 		func() int {
 			return len(data)
@@ -40,39 +40,28 @@ func newFilesStatusList(data []FileStatus, onSelectMutated SelectionHandler, onS
 	return list
 }
 
-func handleSelection(selected FileStatus, onSelectMutated SelectionHandler, onSelectDeleted SelectionHandler, onSelectUntracked SelectionHandler) {
-	switch selected.status {
-	case Deleted:
-		onSelectDeleted(selected.FilePath)
-	case Untracked:
-		onSelectUntracked(selected.FilePath)
-	default:
-		onSelectMutated(selected.FilePath)
-	}
-}
-
 func loadIcon(relativePath string) (fyne.Resource, error) {
 	res, err := fyne.LoadResourceFromPath(relativePath)
 	return res, err
 }
 
 func pickIconPath(item FileStatus) string {
-	if item.status == Added {
+	if item.Status == Added {
 		return "res/green_plus.png"
 	}
-	if item.status == Deleted && item.staged {
+	if item.Status == Deleted && item.staged {
 		return "res/green_minus.png"
 	}
-	if item.status == Deleted && !item.staged {
+	if item.Status == Deleted && !item.staged {
 		return "res/red_minus.png"
 	}
-	if item.status == Modified && item.staged {
+	if item.Status == Modified && item.staged {
 		return "res/green_m.png"
 	}
-	if item.status == Modified && !item.staged {
+	if item.Status == Modified && !item.staged {
 		return "res/red_m.png"
 	}
-	if item.status == Untracked {
+	if item.Status == Untracked {
 		return "res/red_question.png"
 	}
 	return ""
@@ -83,28 +72,26 @@ func pickIconPath(item FileStatus) string {
 // ----------------------
 type StatusWidget struct {
 	*ui.FocusComponent
-	scroll            *container.Scroll
-	nestedList        *widget.List
-	selectionIndex    int
-	data              []FileStatus
-	onSelectMutated   SelectionHandler
-	onSelectDeleted   SelectionHandler
-	onSelectUntracked SelectionHandler
+	scroll         *container.Scroll
+	nestedList     *widget.List
+	selectionIndex int
+	data           []FileStatus
+	onSelected     SelectionHandler
 }
 
-func NewStatusWidget(data []FileStatus, onSelectMutated SelectionHandler, onSelectDeleted SelectionHandler, onSelectUntracked SelectionHandler) *StatusWidget {
-	list := newFilesStatusList(data, onSelectMutated, onSelectDeleted, onSelectUntracked)
+func NewStatusWidget(data []FileStatus, onSelected SelectionHandler) *StatusWidget {
+	list := newFilesStatusList(data, onSelected)
 
 	scroll := container.NewScroll(list)
 
-	ret := &StatusWidget{ui.NewFocusComponent(scroll), scroll, list, 0, data, onSelectMutated, onSelectDeleted, onSelectUntracked}
+	ret := &StatusWidget{ui.NewFocusComponent(scroll), scroll, list, 0, data, onSelected}
 	if len(data) != 0 {
 		ret.selectItem(0)
 	}
 
 	// update selectionIndex on click
 	list.OnSelected = func(i widget.ListItemID) {
-		handleSelection(data[i], onSelectMutated, onSelectDeleted, onSelectUntracked)
+		onSelected(data[i])
 		ret.selectionIndex = i
 	}
 
@@ -140,6 +127,6 @@ func (dw *StatusWidget) OnArrowLeft() {
 }
 
 func (dw *StatusWidget) selectItem(index int) {
-	handleSelection(dw.data[index], dw.onSelectMutated, dw.onSelectDeleted, dw.onSelectDeleted)
+	dw.onSelected(dw.data[index])
 	dw.nestedList.Select(index)
 }

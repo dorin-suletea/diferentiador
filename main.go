@@ -18,28 +18,18 @@ func main() {
 	app := ui.NewApp()
 
 	// diff widget, center
-	// diffWidget := container.NewScroll(container.NewVBox())
 	diffWidget := diff.NewDiffWidget([]fyne.CanvasObject{})
+	gitStatus := status.GetStatusForFiles()
 
-	// file status bar, left
-	genericSelectionHandler := func(content string, scrollContainer *diff.DiffWidget) {
-		lineLabels := diff.ContentAsLabels(content)
-		diffWidget.SetContent(lineLabels)
-	}
-	onMutatedHandler := func(selectedFile string) {
-		content := diff.GetDiffForFile(selectedFile)
-		genericSelectionHandler(content, diffWidget)
-	}
-	onDeletedHandler := func(selectedFile string) {
-		content := diff.MarkLines(diff.GetHeadForFile(selectedFile), '-')
-		genericSelectionHandler(content, diffWidget)
-	}
-	onUntrackedHandler := func(selectedFile string) {
-		content := diff.GetRawFileContents(selectedFile)
-		genericSelectionHandler(content, diffWidget)
+	diffCache := diff.NewGitDiffCache(gitStatus)
+
+	selectionHandler := func(f status.FileStatus) {
+		//TODO : must receive params, this is not safe
+		content := diffCache.GetContent(f)
+		diffWidget.SetContent(diff.ContentAsLabels(content))
 	}
 
-	statusWidget := status.NewStatusWidget(status.GetStatusForFiles(), onMutatedHandler, onDeletedHandler, onUntrackedHandler)
+	statusWidget := status.NewStatusWidget(status.GetStatusForFiles(), selectionHandler)
 
 	diff.NewGitDiffCache(status.GetStatusForFiles())
 
