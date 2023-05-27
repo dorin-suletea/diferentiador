@@ -21,50 +21,43 @@ type GitDifCache struct {
 
 func NewGitDiffCache(keys []status.FileStatus) *GitDifCache {
 	contentMap := make(map[status.FileStatus]string)
-
 	for _, fs := range keys {
 		contentMap[fs] = ""
 	}
 
 	ret := GitDifCache{contentMap, 0}
+	// TODO : refresh first file eagerly and start a cron for others
 	ret.refresh()
 	return &ret
 }
 
 func (gd *GitDifCache) GetContent(key status.FileStatus) string {
-	// todo : precompute getRawFileContents| getHeadForFile etc in init
-	// switch key.Status {
-	// case status.Deleted:
-	// 	content := markLines(getHeadForFile(key.FilePath), '-')
-	// 	return content
-	// case status.Untracked:
-	// 	content := getRawFileContents(key.FilePath)
-	// 	return content
-	// case status.Modified:
-	// 	content := getDiffForFile(key.FilePath)
-	// 	return content
-	// }
-
 	return gd.diffContentMap[key]
 }
 
 func (gd *GitDifCache) refresh() {
 	for key := range gd.diffContentMap {
-		// files with different status (modified, deleted, untracked) are issuing different commands for their diff
-		switch key.Status {
-		case status.Deleted:
-			// TODO : this is bugged with git commands, at least deletes dont work
-			gd.diffContentMap[key] = markLines(getHeadForFile(key.FilePath), '-')
-		case status.Untracked:
-			gd.diffContentMap[key] = getRawFileContents(key.FilePath)
-		case status.Added:
-			gd.diffContentMap[key] = markLines(getRawFileContents(key.FilePath), '+')
-		case status.Modified:
-			gd.diffContentMap[key] = getDiffForFile(key.FilePath)
-		}
+		gd.diffContentMap[key] = gd.invokeGitBindings(key)
 	}
 	gd.lastRefreshed = time.Now().Unix()
 	fmt.Println(gd.diffContentMap)
+}
+
+// Files with different status (modified, deleted, untracked) are issuing different commands for their diff
+func (gd *GitDifCache) invokeGitBindings(key status.FileStatus) string {
+	// TODO : this is bugged with git commands, at least deletes dont work
+	switch key.Status {
+	case status.Deleted:
+		return markLines(getHeadForFile(key.FilePath), '-')
+	case status.Untracked:
+		return getRawFileContents(key.FilePath)
+	case status.Added:
+		return markLines(getRawFileContents(key.FilePath), '+')
+	case status.Modified:
+		return getDiffForFile(key.FilePath)
+	}
+	// TODO handle properly
+	panic("Invalid status" + key.Status)
 }
 
 func getDiffForFile(filePath string) string {
