@@ -53,6 +53,7 @@ func (gd *GitDifCache) refresh() {
 		// files with different status (modified, deleted, untracked) are issuing different commands for their diff
 		switch key.Status {
 		case status.Deleted:
+			// TODO : this is bugged with git commands, at least deletes dont work
 			gd.diffContentMap[key] = markLines(getHeadForFile(key.FilePath), '-')
 		case status.Untracked:
 			gd.diffContentMap[key] = getRawFileContents(key.FilePath)
