@@ -33,24 +33,34 @@ func NewGitDiffCache(keys []status.FileStatus) *GitDifCache {
 
 func (gd *GitDifCache) GetContent(key status.FileStatus) string {
 	// todo : precompute getRawFileContents| getHeadForFile etc in init
-	switch key.Status {
-	case status.Deleted:
-		content := markLines(getHeadForFile(key.FilePath), '-')
-		return content
-	case status.Untracked:
-		content := getRawFileContents(key.FilePath)
-		return content
-	case status.Modified:
-		content := getDiffForFile(key.FilePath)
-		return content
-	}
+	// switch key.Status {
+	// case status.Deleted:
+	// 	content := markLines(getHeadForFile(key.FilePath), '-')
+	// 	return content
+	// case status.Untracked:
+	// 	content := getRawFileContents(key.FilePath)
+	// 	return content
+	// case status.Modified:
+	// 	content := getDiffForFile(key.FilePath)
+	// 	return content
+	// }
 
 	return gd.diffContentMap[key]
 }
 
 func (gd *GitDifCache) refresh() {
 	for key := range gd.diffContentMap {
-		gd.diffContentMap[key] = getDiffForFile(key.FilePath)
+		// files with different status (modified, deleted, untracked) are issuing different commands for their diff
+		switch key.Status {
+		case status.Deleted:
+			gd.diffContentMap[key] = markLines(getHeadForFile(key.FilePath), '-')
+		case status.Untracked:
+			gd.diffContentMap[key] = getRawFileContents(key.FilePath)
+		case status.Added:
+			gd.diffContentMap[key] = markLines(getRawFileContents(key.FilePath), '+')
+		case status.Modified:
+			gd.diffContentMap[key] = getDiffForFile(key.FilePath)
+		}
 	}
 	gd.lastRefreshed = time.Now().Unix()
 	fmt.Println(gd.diffContentMap)
