@@ -47,14 +47,16 @@ func (gd *GitDifCache) refresh() {
 func (gd *GitDifCache) invokeGitBindings(key status.FileStatus) string {
 	// TODO : this is bugged with git commands, at least deletes dont work
 	switch key.Status {
+	case status.Modified:
+		return getDiffForFile(key.FilePath)
+	case status.Added:
+		return markLines(getRawFileContents(key.FilePath), '+')
+
 	case status.Deleted:
 		return markLines(getHeadForFile(key.FilePath), '-')
 	case status.Untracked:
 		return getRawFileContents(key.FilePath)
-	case status.Added:
-		return markLines(getRawFileContents(key.FilePath), '+')
-	case status.Modified:
-		return getDiffForFile(key.FilePath)
+
 	}
 	// TODO handle properly
 	panic("Invalid status" + key.Status)
