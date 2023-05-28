@@ -50,16 +50,14 @@ func (gd *GitDifCache) invokeGitBindings(key status.FileStatus) string {
 	switch key.Status {
 	case status.Untracked:
 		return getRawFileContents(key.FilePath)
-
 	case status.Modified:
 		return getDiffForFile(key.FilePath)
 	case status.Added:
 		return markLines(getRawFileContents(key.FilePath), '+')
 	case status.Renamed:
 		return key.FilePath
-
 	case status.Deleted:
-		return "" //markLines(getHeadForFile(key.FilePath), '-')
+		return markLines(getHeadForFile(key.FilePath), '-')
 
 	}
 	// TODO handle properly
