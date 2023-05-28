@@ -46,7 +46,8 @@ func (gd *GitDifCache) refresh() {
 
 // Files with different status (modified, deleted, untracked) are issuing different commands for their diff
 func (gd *GitDifCache) invokeGitBindings(key status.FileStatus) string {
-	// TODO : this is bugged with git commands, at least deletes dont work
+	// TODO : fixme. Modified staged dont show
+
 	switch key.Status {
 	case status.Untracked:
 		return getRawFileContents(key.FilePath)

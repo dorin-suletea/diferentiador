@@ -23,7 +23,7 @@ func newFilesStatusList(data []FileStatus, onSelected SelectionHandler) *widget.
 			placeholderFileName := widget.NewLabel("")
 			placeholderFileName.TextStyle = ui.FontMono
 
-			return container.New(layout.NewHBoxLayout(), placeholderStatusIcon, placeholderFileName, layout.NewSpacer())
+			return container.New(layout.NewHBoxLayout(), widget.NewLabel(" "), placeholderStatusIcon, placeholderFileName, layout.NewSpacer())
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
 			container := o.(*fyne.Container)
@@ -31,11 +31,10 @@ func newFilesStatusList(data []FileStatus, onSelected SelectionHandler) *widget.
 			// icon
 			resource, err := loadIcon(pickIconPath(item))
 			if err != nil {
-				fmt.Println(err)
 				resource = theme.ContentRemoveIcon()
 			}
-			(container.Objects[0].(*widget.Icon)).SetResource(resource)
-			(container.Objects[1].(*widget.Label)).SetText(data[i].FilePath)
+			(container.Objects[1].(*widget.Icon)).SetResource(resource)
+			(container.Objects[2].(*widget.Label)).SetText(data[i].FilePath)
 		})
 	return list
 }
@@ -45,24 +44,28 @@ func loadIcon(relativePath string) (fyne.Resource, error) {
 	return res, err
 }
 
+// https://icons8.com/icon/set/plus/ios-filled
 func pickIconPath(item FileStatus) string {
 	if item.Status == Added {
-		return "res/green_plus.png"
+		return "res/plus.png"
 	}
 	if item.Status == Deleted && item.staged {
-		return "res/green_minus.png"
+		return "res/minus_green.png"
 	}
 	if item.Status == Deleted && !item.staged {
-		return "res/red_minus.png"
+		return "res/minus_red.png"
 	}
 	if item.Status == Modified && item.staged {
-		return "res/green_m.png"
+		return "res/m_green.png"
 	}
 	if item.Status == Modified && !item.staged {
-		return "res/red_m.png"
+		return "res/m_red.png"
 	}
 	if item.Status == Untracked {
-		return "res/red_question.png"
+		return "res/questionmark.png"
+	}
+	if item.Status == Renamed {
+		return "res/r.png"
 	}
 	return ""
 }
@@ -92,6 +95,7 @@ func NewStatusWidget(data []FileStatus, onSelected SelectionHandler) *StatusWidg
 	// update selectionIndex on click
 	list.OnSelected = func(i widget.ListItemID) {
 		onSelected(data[i])
+		fmt.Print("selected")
 		ret.selectionIndex = i
 	}
 

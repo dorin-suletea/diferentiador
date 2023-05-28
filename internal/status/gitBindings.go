@@ -17,14 +17,16 @@ const (
 )
 
 func GetStatusForFiles() []FileStatus {
-	// split output into  lines
-	rawGitStatus := internal.RunCmd("git", "status", "-s", "-u")
+	// alternatively `internal.RunCmd("git", "status", "-s", "-u")``
+	rawGitStatus := internal.RunCmd("git", "status", "--porcelain")
 	lines := filterEmptyLines(strings.Split(rawGitStatus, "\n"))
+
+	// TODO : there are many more status
 
 	// tokenize into data objects
 	files := []FileStatus{}
 	for _, line := range lines {
-		// whitespaces are significant for the status
+		// whitespaces are significant for the stat us
 		statusToken := line[0:2]
 		// whitespace are not significant for anything else
 		splits := strings.Fields(line)
@@ -41,6 +43,8 @@ func GetStatusForFiles() []FileStatus {
 			files = append(files, FileStatus{splits[1], true, Modified})
 		case " M":
 			files = append(files, FileStatus{splits[1], false, Modified})
+		case "MM":
+			files = append(files, FileStatus{splits[1], false, Modified})
 		case "R ":
 			oldName := splits[3]
 			newName := splits[1]
@@ -49,6 +53,8 @@ func GetStatusForFiles() []FileStatus {
 			// no-op : rename is always staged, else its a detele+add
 		case "??":
 			files = append(files, FileStatus{splits[1], false, Untracked})
+		default:
+			panic("Fixme : Can't parse : " + statusToken)
 		}
 	}
 	return files
