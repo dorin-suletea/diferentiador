@@ -37,25 +37,29 @@ func (gd *GitDifCache) GetContent(key status.FileStatus) string {
 
 func (gd *GitDifCache) refresh() {
 	for key := range gd.diffContentMap {
+		fmt.Println(key)
 		gd.diffContentMap[key] = gd.invokeGitBindings(key)
 	}
 	gd.lastRefreshed = time.Now().Unix()
-	fmt.Println(gd.diffContentMap)
+
 }
 
 // Files with different status (modified, deleted, untracked) are issuing different commands for their diff
 func (gd *GitDifCache) invokeGitBindings(key status.FileStatus) string {
 	// TODO : this is bugged with git commands, at least deletes dont work
 	switch key.Status {
+	case status.Untracked:
+		return getRawFileContents(key.FilePath)
+
 	case status.Modified:
 		return getDiffForFile(key.FilePath)
 	case status.Added:
 		return markLines(getRawFileContents(key.FilePath), '+')
+	case status.Renamed:
+		return key.FilePath
 
 	case status.Deleted:
-		return markLines(getHeadForFile(key.FilePath), '-')
-	case status.Untracked:
-		return getRawFileContents(key.FilePath)
+		return "" //markLines(getHeadForFile(key.FilePath), '-')
 
 	}
 	// TODO handle properly

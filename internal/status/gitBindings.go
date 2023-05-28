@@ -12,6 +12,7 @@ const (
 	Added     Status = "a"
 	Modified  Status = "m"
 	Deleted   Status = "d"
+	Renamed   Status = "r"
 	Untracked Status = "u"
 )
 
@@ -43,7 +44,7 @@ func GetStatusForFiles() []FileStatus {
 		case "R ":
 			oldName := splits[3]
 			newName := splits[1]
-			files = append(files, FileStatus{oldName + "->" + newName, true, Modified})
+			files = append(files, FileStatus{oldName + "->" + newName, true, Renamed})
 		case " R":
 			// no-op : rename is always staged, else its a detele+add
 		case "??":
