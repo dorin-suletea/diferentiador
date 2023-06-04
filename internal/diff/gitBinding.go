@@ -2,7 +2,6 @@ package diff
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -19,15 +18,19 @@ type GitDifCache struct {
 	lastRefreshed  int64
 }
 
-func NewGitDiffCache(keys []status.FileStatus) *GitDifCache {
+func NewGitDiffCache(keys []status.FileStatus, refreshSeconds int) *GitDifCache {
 	contentMap := make(map[status.FileStatus]string)
 	for _, fs := range keys {
 		contentMap[fs] = ""
 	}
 
 	ret := GitDifCache{contentMap, 0}
-	// TODO : refresh first file eagerly and start a cron for others
-	ret.refresh()
+	// refresh first blocking and lazily the rest
+	if len(keys) != 0 {
+		ret.diffContentMap[keys[0]] = ret.invokeGitBindings(keys[0])
+	}
+	ret.startCron(refreshSeconds)
+
 	return &ret
 }
 
@@ -37,17 +40,24 @@ func (gd *GitDifCache) GetContent(key status.FileStatus) string {
 
 func (gd *GitDifCache) refresh() {
 	for key := range gd.diffContentMap {
-		fmt.Println(key)
 		gd.diffContentMap[key] = gd.invokeGitBindings(key)
 	}
+	println("Refreshing diff cache")
 	gd.lastRefreshed = time.Now().Unix()
+}
 
+func (gd *GitDifCache) startCron(refreshSeconds int) {
+	go func(refreshSeconds int) {
+		gd.refresh()
+		for range time.Tick(time.Second * time.Duration(refreshSeconds)) {
+			gd.refresh()
+		}
+	}(refreshSeconds)
 }
 
 // Files with different status (modified, deleted, untracked) are issuing different commands for their diff
 func (gd *GitDifCache) invokeGitBindings(key status.FileStatus) string {
 	// TODO : fixme. Modified staged dont show
-
 	switch key.Status {
 	case status.Untracked:
 		return getRawFileContents(key.FilePath)

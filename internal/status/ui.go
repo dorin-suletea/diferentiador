@@ -95,15 +95,10 @@ func NewStatusWidget(data []FileStatus, onSelected SelectionHandler) *StatusWidg
 	// update selectionIndex on click
 	list.OnSelected = func(i widget.ListItemID) {
 		onSelected(data[i])
-		fmt.Print("selected")
 		ret.selectionIndex = i
 	}
 
 	return ret
-}
-
-func (dw *StatusWidget) InitHandlers() {
-
 }
 
 func (dw *StatusWidget) OnArrowDown() {
