@@ -19,13 +19,13 @@ type GitDifCache struct {
 	onRefreshed    func()
 }
 
-func NewGitDiffCache(keys []status.FileStatus, refreshSeconds int, onRefreshed func()) *GitDifCache {
+func NewGitDiffCache(keys []status.FileStatus, refreshSeconds int) *GitDifCache {
 	contentMap := make(map[status.FileStatus]string)
 	for _, fs := range keys {
 		contentMap[fs] = ""
 	}
 
-	ret := GitDifCache{contentMap, 0, onRefreshed}
+	ret := GitDifCache{contentMap, 0, func() { /*no-op*/ }}
 	// refresh first blocking and lazily the rest
 	if len(keys) != 0 {
 		ret.diffContentMap[keys[0]] = ret.invokeGitBindings(keys[0])
@@ -33,6 +33,10 @@ func NewGitDiffCache(keys []status.FileStatus, refreshSeconds int, onRefreshed f
 	ret.startCron(refreshSeconds)
 
 	return &ret
+}
+
+func (gd *GitDifCache) SetOnRefreshHandler(handler func()) {
+	gd.onRefreshed = handler
 }
 
 func (gd *GitDifCache) GetContent(key status.FileStatus) string {
@@ -43,7 +47,6 @@ func (gd *GitDifCache) refresh() {
 	for key := range gd.diffContentMap {
 		gd.diffContentMap[key] = gd.invokeGitBindings(key)
 	}
-	println("Refreshing diff cache")
 	gd.lastRefreshed = time.Now().Unix()
 	gd.onRefreshed()
 }

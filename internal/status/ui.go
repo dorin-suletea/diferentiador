@@ -1,8 +1,6 @@
 package status
 
 import (
-	"fmt"
-
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
@@ -118,11 +116,11 @@ func (dw *StatusWidget) OnArrowUp() {
 }
 
 func (dw *StatusWidget) OnArrowRight() {
-	fmt.Println("right")
+	//no-op
 }
 
 func (dw *StatusWidget) OnArrowLeft() {
-	fmt.Println("left")
+	//no-op
 }
 
 func (dw *StatusWidget) selectItem(index int) {

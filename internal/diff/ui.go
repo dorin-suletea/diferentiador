@@ -9,7 +9,7 @@ import (
 	"github.com/dorin-suletea/diferentiador~/ui"
 )
 
-func ContentAsLabels(content string) []fyne.CanvasObject {
+func contentAsLabels(content string) []fyne.CanvasObject {
 
 	uiLines := []*canvas.Text{}
 	for _, line := range strings.Split(strings.TrimSuffix(content, "\n"), "\n") {
@@ -58,7 +58,11 @@ func NewDiffWidget(lineLabels []fyne.CanvasObject) *DiffWidget {
 	return &DiffWidget{ui.NewFocusComponent(scroll), scroll, labelBox} //scroll
 }
 
-func (dw *DiffWidget) SetContent(lineLabels []fyne.CanvasObject) {
+func (dw *DiffWidget) SetContent(diff string) {
+	dw.setContent(contentAsLabels(diff))
+}
+
+func (dw *DiffWidget) setContent(lineLabels []fyne.CanvasObject) {
 	dw.labelBox = container.NewVBox(lineLabels...)
 	dw.scroll.Content = dw.labelBox
 	dw.scroll.Refresh()
