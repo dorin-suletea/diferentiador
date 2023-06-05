@@ -23,8 +23,11 @@ func main() {
 	diffWidget := diff.NewDiffWidget([]fyne.CanvasObject{})
 	gitStatus := status.GetStatusForFiles()
 
-	// TODO : pass in the diff cache to the ui and let it do the refreshing and redrawing selected
-	diffCache := diff.NewGitDiffCache(gitStatus, refreshRateSeconds)
+	// redraw the visible diff ui element
+	onDiffCacheRefresed := func() {
+
+	}
+	diffCache := diff.NewGitDiffCache(gitStatus, refreshRateSeconds, onDiffCacheRefresed)
 
 	selectionHandler := func(f status.FileStatus) {
 		//TODO : must receive params, this is not safe
@@ -33,6 +36,9 @@ func main() {
 	}
 
 	statusWidget := status.NewStatusWidget(status.GetStatusForFiles(), selectionHandler)
+
+	//todo this one must refresh
+	statusWidget.GetSelected()
 
 	app.AddComponent(statusWidget)
 	app.AddComponent(diffWidget)

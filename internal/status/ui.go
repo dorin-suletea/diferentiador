@@ -129,3 +129,7 @@ func (dw *StatusWidget) selectItem(index int) {
 	dw.onSelected(dw.data[index])
 	dw.nestedList.Select(index)
 }
+
+func (dw *StatusWidget) GetSelected() FileStatus {
+	return dw.data[dw.selectionIndex]
+}
