@@ -59,11 +59,8 @@ func NewDiffWidget(lineLabels []fyne.CanvasObject) *DiffWidget {
 }
 
 func (dw *DiffWidget) SetContent(diff string) {
-	dw.setContent(contentAsLabels(diff))
-}
-
-func (dw *DiffWidget) setContent(lineLabels []fyne.CanvasObject) {
-	dw.labelBox = container.NewVBox(lineLabels...)
+	linesAsLabels := contentAsLabels(diff)
+	dw.labelBox = container.NewVBox(linesAsLabels...)
 	dw.scroll.Content = dw.labelBox
 	dw.scroll.Refresh()
 }

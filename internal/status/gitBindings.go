@@ -2,6 +2,7 @@ package status
 
 import (
 	"strings"
+	"time"
 
 	"github.com/dorin-suletea/diferentiador~/internal"
 )
@@ -16,7 +17,7 @@ const (
 	Untracked Status = "u"
 )
 
-func GetStatusForFiles() []FileStatus {
+func getStatusForFiles() []FileStatus {
 	// alternatively `internal.RunCmd("git", "status", "-s", "-u")``
 	rawGitStatus := internal.RunCmd("git", "status", "--porcelain")
 	lines := filterEmptyLines(strings.Split(rawGitStatus, "\n"))
@@ -58,6 +59,43 @@ func GetStatusForFiles() []FileStatus {
 		}
 	}
 	return files
+}
+
+type FileStatusCache struct {
+	status        []FileStatus
+	lastRefreshed int64
+	onRefreshed   func()
+}
+
+func NewGitDiffCache(refreshSeconds int) *FileStatusCache {
+	// TODO : this is blocking now, but can be implemented with promises/channels
+	// so we block when we actually need to read the values
+	ret := &FileStatusCache{getStatusForFiles(), 0, func() { /*no op*/ }}
+	ret.startCron(refreshSeconds)
+	return ret
+}
+
+func (fsc *FileStatusCache) GetChangedFiles() []FileStatus {
+	return fsc.status
+}
+
+func (gd *FileStatusCache) SetOnRefreshHandler(handler func()) {
+	gd.onRefreshed = handler
+}
+
+func (gd *FileStatusCache) startCron(refreshSeconds int) {
+	go func(refreshSeconds int) {
+		gd.refresh()
+		for range time.Tick(time.Second * time.Duration(refreshSeconds)) {
+			gd.refresh()
+		}
+	}(refreshSeconds)
+}
+
+func (gd *FileStatusCache) refresh() {
+	gd.status = getStatusForFiles()
+	gd.lastRefreshed = time.Now().Unix()
+	gd.onRefreshed()
 }
 
 type FileStatus struct {

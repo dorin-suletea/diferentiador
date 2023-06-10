@@ -26,6 +26,7 @@ func NewGitDiffCache(keys []status.FileStatus, refreshSeconds int) *GitDifCache 
 	}
 
 	ret := GitDifCache{contentMap, 0, func() { /*no-op*/ }}
+	// TODO : this can be done with Promises/channels. Start the cron and block on reader.
 	// refresh first blocking and lazily the rest
 	if len(keys) != 0 {
 		ret.diffContentMap[keys[0]] = ret.invokeGitBindings(keys[0])

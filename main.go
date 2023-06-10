@@ -21,9 +21,9 @@ func main() {
 
 	// diff widget, center
 	diffWidget := diff.NewDiffWidget([]fyne.CanvasObject{})
-	gitStatus := status.GetStatusForFiles()
+	statusCache := status.NewGitDiffCache(refreshRateSeconds)
 
-	diffCache := diff.NewGitDiffCache(gitStatus, refreshRateSeconds)
+	diffCache := diff.NewGitDiffCache(statusCache.GetChangedFiles(), refreshRateSeconds)
 
 	selectionHandler := func(f status.FileStatus) {
 		//TODO : must receive params, this is not safe
@@ -31,13 +31,16 @@ func main() {
 		diffWidget.SetContent(content)
 	}
 
-	statusWidget := status.NewStatusWidget(status.GetStatusForFiles(), selectionHandler)
+	statusWidget := status.NewStatusWidget(statusCache.GetChangedFiles(), selectionHandler)
 
-	// Update the active diff windown whenever the diff cache is refreshed
+	// Update the active diff windown whenever the diff cache is refreshed s
 	diffCache.SetOnRefreshHandler(func() {
 		selection := statusWidget.GetSelected()
 		diffContent := diffCache.GetContent(selection)
 		diffWidget.SetContent(diffContent)
+	})
+	statusCache.SetOnRefreshHandler(func() {
+		statusWidget.SetContent(statusCache.GetChangedFiles())
 	})
 
 	app.AddComponent(statusWidget)
