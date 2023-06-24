@@ -7,27 +7,28 @@ package main
 
 import (
 	"fyne.io/fyne/v2"
+	"github.com/dorin-suletea/diferentiador~/app"
 	"github.com/dorin-suletea/diferentiador~/internal"
 )
 
 const refreshRateSeconds int = 10
 
 func main() {
-	app := internal.NewApp()
+	application := internal.NewApp()
 
 	// diff widget, centerss
-	diffWidget := internal.NewDiffWidget([]fyne.CanvasObject{})
-	statusCache := internal.NewChangedFilesCache(refreshRateSeconds)
+	diffWidget := app.NewDiffWidget([]fyne.CanvasObject{})
+	statusCache := app.NewChangedFilesCache(refreshRateSeconds)
 
-	diffCache := internal.NewFileDiffCache(statusCache.GetChangedFiles(), refreshRateSeconds)
+	diffCache := app.NewFileDiffCache(statusCache.GetChangedFiles(), refreshRateSeconds)
 
-	selectionHandler := func(f internal.FileStatus) {
+	selectionHandler := func(f app.FileStatus) {
 		//TODO : must receive params, this is not safe
 		content := diffCache.GetContent(f)
 		diffWidget.SetContent(content)
 	}
 
-	statusWidget := internal.NewStatusWidget(statusCache.GetChangedFiles(), selectionHandler)
+	statusWidget := app.NewStatusWidget(statusCache.GetChangedFiles(), selectionHandler)
 
 	// Update the active diff windown whenever the diff cache is refreshed s
 	diffCache.SetOnRefreshHandler(func() {
@@ -39,15 +40,15 @@ func main() {
 		statusWidget.SetContent(statusCache.GetChangedFiles())
 	})
 
-	app.AddComponent(statusWidget)
-	app.AddComponent(diffWidget)
+	application.AddComponent(statusWidget)
+	application.AddComponent(diffWidget)
 
-	app.AddShortcut(internal.ShCycleFocus, func() { app.CycleFocus() })
-	app.AddShortcut(internal.ShArrowDown, func() { app.OnArrowDown() })
-	app.AddShortcut(internal.ShArrowUp, func() { app.OnArrowUp() })
-	app.AddShortcut(internal.ShArrowRight, func() { app.OnArrowRight() })
-	app.AddShortcut(internal.ShArrowLeft, func() { app.OnArrowLeft() })
-	app.ShowAndRun()
+	application.AddShortcut(internal.ShCycleFocus, func() { application.CycleFocus() })
+	application.AddShortcut(internal.ShArrowDown, func() { application.OnArrowDown() })
+	application.AddShortcut(internal.ShArrowUp, func() { application.OnArrowUp() })
+	application.AddShortcut(internal.ShArrowRight, func() { application.OnArrowRight() })
+	application.AddShortcut(internal.ShArrowLeft, func() { application.OnArrowLeft() })
+	application.ShowAndRun()
 }
 
 // var focus []*ui.Focusable = []*ui.Focusable{}

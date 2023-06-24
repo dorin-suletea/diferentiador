@@ -1,4 +1,4 @@
-package internal
+package app
 
 import (
 	"bytes"
@@ -7,6 +7,8 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/dorin-suletea/diferentiador~/internal"
 )
 
 type FileDifCache struct {
@@ -79,7 +81,7 @@ func (gd *FileDifCache) invokeGitBindings(key FileStatus) string {
 }
 
 func getDiffForFile(filePath string) string {
-	rawGitDiff := RunCmd("git", "diff", "-U50", filePath)
+	rawGitDiff := internal.RunCmd("git", "diff", "-U50", filePath)
 	return rawGitDiff
 }
 
@@ -101,7 +103,7 @@ func getRawFileContents(filePath string) string {
 }
 
 func getHeadForFile(filePath string) string {
-	rawGitDiff := RunCmd("git", "show", "HEAD^:"+filePath)
+	rawGitDiff := internal.RunCmd("git", "show", "HEAD^:"+filePath)
 	return rawGitDiff
 }
 
