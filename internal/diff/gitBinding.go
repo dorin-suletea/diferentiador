@@ -12,20 +12,20 @@ import (
 	"github.com/dorin-suletea/diferentiador~/internal/status"
 )
 
-type GitDifCache struct {
+type FileDifCache struct {
 	// maps each file to it's diff
 	diffContentMap map[status.FileStatus]string
 	lastRefreshed  int64
 	onRefreshed    func()
 }
 
-func NewGitDiffCache(keys []status.FileStatus, refreshSeconds int) *GitDifCache {
+func NewFileDiffCache(keys []status.FileStatus, refreshSeconds int) *FileDifCache {
 	contentMap := make(map[status.FileStatus]string)
 	for _, fs := range keys {
 		contentMap[fs] = ""
 	}
 
-	ret := GitDifCache{contentMap, 0, func() { /*no-op*/ }}
+	ret := FileDifCache{contentMap, 0, func() { /*no-op*/ }}
 	// TODO : this can be done with Promises/channels. Start the cron and block on reader.
 	// refresh first blocking and lazily the rest
 	if len(keys) != 0 {
@@ -36,15 +36,15 @@ func NewGitDiffCache(keys []status.FileStatus, refreshSeconds int) *GitDifCache 
 	return &ret
 }
 
-func (gd *GitDifCache) SetOnRefreshHandler(handler func()) {
+func (gd *FileDifCache) SetOnRefreshHandler(handler func()) {
 	gd.onRefreshed = handler
 }
 
-func (gd *GitDifCache) GetContent(key status.FileStatus) string {
+func (gd *FileDifCache) GetContent(key status.FileStatus) string {
 	return gd.diffContentMap[key]
 }
 
-func (gd *GitDifCache) refresh() {
+func (gd *FileDifCache) refresh() {
 	for key := range gd.diffContentMap {
 		gd.diffContentMap[key] = gd.invokeGitBindings(key)
 	}
@@ -52,7 +52,7 @@ func (gd *GitDifCache) refresh() {
 	gd.onRefreshed()
 }
 
-func (gd *GitDifCache) startCron(refreshSeconds int) {
+func (gd *FileDifCache) startCron(refreshSeconds int) {
 	go func(refreshSeconds int) {
 		gd.refresh()
 		for range time.Tick(time.Second * time.Duration(refreshSeconds)) {
@@ -62,7 +62,7 @@ func (gd *GitDifCache) startCron(refreshSeconds int) {
 }
 
 // Files with different status (modified, deleted, untracked) are issuing different commands for their diff
-func (gd *GitDifCache) invokeGitBindings(key status.FileStatus) string {
+func (gd *FileDifCache) invokeGitBindings(key status.FileStatus) string {
 	// TODO : fixme. Modified staged dont show
 	switch key.Status {
 	case status.Untracked:

@@ -1,6 +1,7 @@
 package status
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -65,37 +66,58 @@ type FileStatusCache struct {
 	status        []FileStatus
 	lastRefreshed int64
 	onRefreshed   func()
+
+	//TODO impl generic promise
+
+	//This allows marginally better performance.
+	//The app needs initial file statuses to continue with other initializations.
+	//Instead of issuing a blocking request to git on cache creation
+	//we will do this in a gorouting, allow the flow of the app to continue with other stuff
+	//and block only when the data is actually needed. Think a Promise/Future.
+	boostrapDone bool
+	boostrapChan chan []FileStatus
 }
 
-func NewGitDiffCache(refreshSeconds int) *FileStatusCache {
-	// TODO : this is blocking now, but can be implemented with promises/channels
-	// so we block when we actually need to read the values
-	ret := &FileStatusCache{getStatusForFiles(), 0, func() { /*no op*/ }}
+func NewChangedFilesCache(refreshSeconds int) *FileStatusCache {
+	ret := &FileStatusCache{[]FileStatus{}, 0, func() { /*no op*/ }, false, make(chan []FileStatus)}
+
+	go func(bc chan []FileStatus) {
+		bc <- getStatusForFiles()
+	}(ret.boostrapChan)
+
 	ret.startCron(refreshSeconds)
+	fmt.Println("exit new")
 	return ret
 }
 
-func (fsc *FileStatusCache) GetChangedFiles() []FileStatus {
-	return fsc.status
+func (t *FileStatusCache) GetChangedFiles() []FileStatus {
+	fmt.Println("enter get")
+	if !t.boostrapDone {
+		fmt.Println("blocking")
+		t.status = <-t.boostrapChan
+		t.boostrapDone = true
+		fmt.Println("exiting")
+	}
+
+	return t.status
 }
 
-func (gd *FileStatusCache) SetOnRefreshHandler(handler func()) {
-	gd.onRefreshed = handler
+func (t *FileStatusCache) SetOnRefreshHandler(handler func()) {
+	t.onRefreshed = handler
 }
 
-func (gd *FileStatusCache) startCron(refreshSeconds int) {
-	go func(refreshSeconds int) {
-		gd.refresh()
+func (t *FileStatusCache) startCron(refreshSeconds int) {
+	go func(refreshSeconds int, gdLocal *FileStatusCache) {
 		for range time.Tick(time.Second * time.Duration(refreshSeconds)) {
-			gd.refresh()
+			gdLocal.refresh()
 		}
-	}(refreshSeconds)
+	}(refreshSeconds, t)
 }
 
-func (gd *FileStatusCache) refresh() {
-	gd.status = getStatusForFiles()
-	gd.lastRefreshed = time.Now().Unix()
-	gd.onRefreshed()
+func (t *FileStatusCache) refresh() {
+	t.status = getStatusForFiles()
+	t.lastRefreshed = time.Now().Unix()
+	t.onRefreshed()
 }
 
 type FileStatus struct {

@@ -21,9 +21,9 @@ func main() {
 
 	// diff widget, center
 	diffWidget := diff.NewDiffWidget([]fyne.CanvasObject{})
-	statusCache := status.NewGitDiffCache(refreshRateSeconds)
+	statusCache := status.NewChangedFilesCache(refreshRateSeconds)
 
-	diffCache := diff.NewGitDiffCache(statusCache.GetChangedFiles(), refreshRateSeconds)
+	diffCache := diff.NewFileDiffCache(statusCache.GetChangedFiles(), refreshRateSeconds)
 
 	selectionHandler := func(f status.FileStatus) {
 		//TODO : must receive params, this is not safe
