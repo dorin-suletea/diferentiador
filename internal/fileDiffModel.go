@@ -1,4 +1,4 @@
-package diff
+package internal
 
 import (
 	"bytes"
@@ -7,20 +7,17 @@ import (
 	"os"
 	"strings"
 	"time"
-
-	"github.com/dorin-suletea/diferentiador~/internal"
-	"github.com/dorin-suletea/diferentiador~/internal/status"
 )
 
 type FileDifCache struct {
 	// maps each file to it's diff
-	diffContentMap map[status.FileStatus]string
+	diffContentMap map[FileStatus]string
 	lastRefreshed  int64
 	onRefreshed    func()
 }
 
-func NewFileDiffCache(keys []status.FileStatus, refreshSeconds int) *FileDifCache {
-	contentMap := make(map[status.FileStatus]string)
+func NewFileDiffCache(keys []FileStatus, refreshSeconds int) *FileDifCache {
+	contentMap := make(map[FileStatus]string)
 	for _, fs := range keys {
 		contentMap[fs] = ""
 	}
@@ -40,7 +37,7 @@ func (gd *FileDifCache) SetOnRefreshHandler(handler func()) {
 	gd.onRefreshed = handler
 }
 
-func (gd *FileDifCache) GetContent(key status.FileStatus) string {
+func (gd *FileDifCache) GetContent(key FileStatus) string {
 	return gd.diffContentMap[key]
 }
 
@@ -62,18 +59,18 @@ func (gd *FileDifCache) startCron(refreshSeconds int) {
 }
 
 // Files with different status (modified, deleted, untracked) are issuing different commands for their diff
-func (gd *FileDifCache) invokeGitBindings(key status.FileStatus) string {
+func (gd *FileDifCache) invokeGitBindings(key FileStatus) string {
 	// TODO : fixme. Modified staged dont show
 	switch key.Status {
-	case status.Untracked:
+	case Untracked:
 		return getRawFileContents(key.FilePath)
-	case status.Modified:
+	case Modified:
 		return getDiffForFile(key.FilePath)
-	case status.Added:
+	case Added:
 		return markLines(getRawFileContents(key.FilePath), '+')
-	case status.Renamed:
+	case Renamed:
 		return key.FilePath
-	case status.Deleted:
+	case Deleted:
 		return markLines(getHeadForFile(key.FilePath), '-')
 
 	}
@@ -82,7 +79,7 @@ func (gd *FileDifCache) invokeGitBindings(key status.FileStatus) string {
 }
 
 func getDiffForFile(filePath string) string {
-	rawGitDiff := internal.RunCmd("git", "diff", "-U50", filePath)
+	rawGitDiff := RunCmd("git", "diff", "-U50", filePath)
 	return rawGitDiff
 }
 
@@ -104,7 +101,7 @@ func getRawFileContents(filePath string) string {
 }
 
 func getHeadForFile(filePath string) string {
-	rawGitDiff := internal.RunCmd("git", "show", "HEAD^:"+filePath)
+	rawGitDiff := RunCmd("git", "show", "HEAD^:"+filePath)
 	return rawGitDiff
 }
 

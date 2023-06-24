@@ -1,10 +1,8 @@
-package status
+package internal
 
 import (
 	"strings"
 	"time"
-
-	"github.com/dorin-suletea/diferentiador~/internal"
 )
 
 type Status string
@@ -15,11 +13,11 @@ type FileStatusCache struct {
 	onRefreshed   func()
 
 	boostrapDone     bool
-	bootstrapPromise internal.Promise[[]FileStatus]
+	bootstrapPromise Promise[[]FileStatus]
 }
 
 func NewChangedFilesCache(refreshSeconds int) *FileStatusCache {
-	boostrapPromise := internal.NewPromise(func() []FileStatus {
+	boostrapPromise := NewPromise(func() []FileStatus {
 		return getStatusForFiles()
 	})
 	ret := &FileStatusCache{[]FileStatus{}, 0, func() { /*no op*/ }, false, boostrapPromise}
@@ -81,7 +79,7 @@ const (
 
 func getStatusForFiles() []FileStatus {
 	// alternatively `internal.RunCmd("git", "status", "-s", "-u")``
-	rawGitStatus := internal.RunCmd("git", "status", "--porcelain")
+	rawGitStatus := RunCmd("git", "status", "--porcelain")
 	lines := filterEmptyLines(strings.Split(rawGitStatus, "\n"))
 
 	// TODO : there are many more status

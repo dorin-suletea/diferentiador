@@ -8,8 +8,6 @@ package main
 import (
 	"fyne.io/fyne/v2"
 	"github.com/dorin-suletea/diferentiador~/internal"
-	"github.com/dorin-suletea/diferentiador~/internal/diff"
-	"github.com/dorin-suletea/diferentiador~/internal/status"
 )
 
 const refreshRateSeconds int = 10
@@ -18,18 +16,18 @@ func main() {
 	app := internal.NewApp()
 
 	// diff widget, centerss
-	diffWidget := diff.NewDiffWidget([]fyne.CanvasObject{})
-	statusCache := status.NewChangedFilesCache(refreshRateSeconds)
+	diffWidget := internal.NewDiffWidget([]fyne.CanvasObject{})
+	statusCache := internal.NewChangedFilesCache(refreshRateSeconds)
 
-	diffCache := diff.NewFileDiffCache(statusCache.GetChangedFiles(), refreshRateSeconds)
+	diffCache := internal.NewFileDiffCache(statusCache.GetChangedFiles(), refreshRateSeconds)
 
-	selectionHandler := func(f status.FileStatus) {
+	selectionHandler := func(f internal.FileStatus) {
 		//TODO : must receive params, this is not safe
 		content := diffCache.GetContent(f)
 		diffWidget.SetContent(content)
 	}
 
-	statusWidget := status.NewStatusWidget(statusCache.GetChangedFiles(), selectionHandler)
+	statusWidget := internal.NewStatusWidget(statusCache.GetChangedFiles(), selectionHandler)
 
 	// Update the active diff windown whenever the diff cache is refreshed s
 	diffCache.SetOnRefreshHandler(func() {
