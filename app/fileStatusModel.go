@@ -28,6 +28,7 @@ func NewChangedFilesCache(refreshSeconds int) *FileStatusCache {
 }
 
 func (t *FileStatusCache) GetChangedFiles() []FileStatus {
+	// TODO : this does not really work. We need to null the channel or something i think
 	if !t.boostrapDone {
 		t.status = t.bootstrapPromise.Get()
 		t.boostrapDone = true

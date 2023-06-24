@@ -19,6 +19,7 @@ type FileDifCache struct {
 }
 
 func NewFileDiffCache(keys []FileStatus, refreshSeconds int) *FileDifCache {
+	// TODO :  this must receive the actual cache
 	contentMap := make(map[FileStatus]string)
 	for _, fs := range keys {
 		contentMap[fs] = ""
