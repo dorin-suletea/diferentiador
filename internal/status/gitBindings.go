@@ -1,7 +1,6 @@
 package status
 
 import (
-	"fmt"
 	"strings"
 	"time"
 
@@ -9,6 +8,68 @@ import (
 )
 
 type Status string
+
+type FileStatusCache struct {
+	status        []FileStatus
+	lastRefreshed int64
+	onRefreshed   func()
+
+	boostrapDone     bool
+	bootstrapPromise internal.Promise[[]FileStatus]
+}
+
+func NewChangedFilesCache(refreshSeconds int) *FileStatusCache {
+	boostrapPromise := internal.NewPromise(func() []FileStatus {
+		return getStatusForFiles()
+	})
+	ret := &FileStatusCache{[]FileStatus{}, 0, func() { /*no op*/ }, false, boostrapPromise}
+	ret.startCron(refreshSeconds)
+	return ret
+}
+
+func (t *FileStatusCache) GetChangedFiles() []FileStatus {
+	if !t.boostrapDone {
+		t.status = t.bootstrapPromise.Get()
+		t.boostrapDone = true
+	}
+
+	return t.status
+}
+
+func (t *FileStatusCache) SetOnRefreshHandler(handler func()) {
+	t.onRefreshed = handler
+}
+
+func (t *FileStatusCache) startCron(refreshSeconds int) {
+	go func(refreshSeconds int, gdLocal *FileStatusCache) {
+		for range time.Tick(time.Second * time.Duration(refreshSeconds)) {
+			gdLocal.refresh()
+		}
+	}(refreshSeconds, t)
+}
+
+func (t *FileStatusCache) refresh() {
+	t.status = getStatusForFiles()
+	t.lastRefreshed = time.Now().Unix()
+	t.onRefreshed()
+}
+
+type FileStatus struct {
+	FilePath string
+	staged   bool
+	Status   Status
+}
+
+// git exec commands have a trailing line at the end, filter it out
+func filterEmptyLines(unfiltered []string) []string {
+	lines := []string{}
+	for _, l := range unfiltered {
+		if len(strings.TrimSpace(l)) != 0 {
+			lines = append(lines, l)
+		}
+	}
+	return lines
+}
 
 const (
 	Added     Status = "a"
@@ -60,79 +121,4 @@ func getStatusForFiles() []FileStatus {
 		}
 	}
 	return files
-}
-
-type FileStatusCache struct {
-	status        []FileStatus
-	lastRefreshed int64
-	onRefreshed   func()
-
-	//TODO impl generic promise
-
-	//This allows marginally better performance.
-	//The app needs initial file statuses to continue with other initializations.
-	//Instead of issuing a blocking request to git on cache creation
-	//we will do this in a gorouting, allow the flow of the app to continue with other stuff
-	//and block only when the data is actually needed. Think a Promise/Future.
-	boostrapDone bool
-	boostrapChan chan []FileStatus
-}
-
-func NewChangedFilesCache(refreshSeconds int) *FileStatusCache {
-	ret := &FileStatusCache{[]FileStatus{}, 0, func() { /*no op*/ }, false, make(chan []FileStatus)}
-
-	go func(bc chan []FileStatus) {
-		bc <- getStatusForFiles()
-	}(ret.boostrapChan)
-
-	ret.startCron(refreshSeconds)
-	fmt.Println("exit new")
-	return ret
-}
-
-func (t *FileStatusCache) GetChangedFiles() []FileStatus {
-	fmt.Println("enter get")
-	if !t.boostrapDone {
-		fmt.Println("blocking")
-		t.status = <-t.boostrapChan
-		t.boostrapDone = true
-		fmt.Println("exiting")
-	}
-
-	return t.status
-}
-
-func (t *FileStatusCache) SetOnRefreshHandler(handler func()) {
-	t.onRefreshed = handler
-}
-
-func (t *FileStatusCache) startCron(refreshSeconds int) {
-	go func(refreshSeconds int, gdLocal *FileStatusCache) {
-		for range time.Tick(time.Second * time.Duration(refreshSeconds)) {
-			gdLocal.refresh()
-		}
-	}(refreshSeconds, t)
-}
-
-func (t *FileStatusCache) refresh() {
-	t.status = getStatusForFiles()
-	t.lastRefreshed = time.Now().Unix()
-	t.onRefreshed()
-}
-
-type FileStatus struct {
-	FilePath string
-	staged   bool
-	Status   Status
-}
-
-// git exec commands have a trailing line at the end, filter it out
-func filterEmptyLines(unfiltered []string) []string {
-	lines := []string{}
-	for _, l := range unfiltered {
-		if len(strings.TrimSpace(l)) != 0 {
-			lines = append(lines, l)
-		}
-	}
-	return lines
 }
