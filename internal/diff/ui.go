@@ -6,7 +6,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
-	"github.com/dorin-suletea/diferentiador~/ui"
+	"github.com/dorin-suletea/diferentiador~/internal"
 )
 
 func contentAsLabels(content string) []fyne.CanvasObject {
@@ -15,23 +15,23 @@ func contentAsLabels(content string) []fyne.CanvasObject {
 	for _, line := range strings.Split(strings.TrimSuffix(content, "\n"), "\n") {
 
 		if len(line) == 0 {
-			tw := canvas.NewText(line, ui.Gray)
+			tw := canvas.NewText(line, internal.Gray)
 			uiLines = append(uiLines, tw)
 			continue
 		}
 
 		switch line[0] {
 		case '-':
-			tw := canvas.NewText(line, ui.Red)
-			tw.TextStyle = ui.FontMono
+			tw := canvas.NewText(line, internal.Red)
+			tw.TextStyle = internal.FontMono
 			uiLines = append(uiLines, tw)
 		case '+':
-			tw := canvas.NewText(line, ui.Green)
-			tw.TextStyle = ui.FontMono
+			tw := canvas.NewText(line, internal.Green)
+			tw.TextStyle = internal.FontMono
 			uiLines = append(uiLines, tw)
 		default:
-			tw := canvas.NewText(line, ui.Gray)
-			tw.TextStyle = ui.FontMono
+			tw := canvas.NewText(line, internal.Gray)
+			tw.TextStyle = internal.FontMono
 			uiLines = append(uiLines, tw)
 		}
 	}
@@ -47,7 +47,7 @@ func contentAsLabels(content string) []fyne.CanvasObject {
 // DiffWidget
 // ----------------------
 type DiffWidget struct {
-	*ui.FocusComponent
+	*internal.FocusComponent
 	scroll   *container.Scroll
 	labelBox *fyne.Container
 }
@@ -55,7 +55,7 @@ type DiffWidget struct {
 func NewDiffWidget(lineLabels []fyne.CanvasObject) *DiffWidget {
 	labelBox := container.NewVBox(lineLabels...)
 	scroll := container.NewScroll(labelBox)
-	return &DiffWidget{ui.NewFocusComponent(scroll), scroll, labelBox} //scroll
+	return &DiffWidget{internal.NewFocusComponent(scroll), scroll, labelBox} //scroll
 }
 
 func (dw *DiffWidget) SetContent(diff string) {
@@ -66,21 +66,21 @@ func (dw *DiffWidget) SetContent(diff string) {
 }
 
 func (dw *DiffWidget) OnArrowDown() {
-	dw.scroll.Offset.Y = dw.scroll.Offset.Y + ui.FontHeight
+	dw.scroll.Offset.Y = dw.scroll.Offset.Y + internal.FontHeight
 	dw.scroll.Refresh()
 }
 
 func (dw *DiffWidget) OnArrowUp() {
-	dw.scroll.Offset.Y = dw.scroll.Offset.Y - ui.FontHeight
+	dw.scroll.Offset.Y = dw.scroll.Offset.Y - internal.FontHeight
 	dw.scroll.Refresh()
 }
 
 func (dw *DiffWidget) OnArrowRight() {
-	dw.scroll.Offset.X = dw.scroll.Offset.X + ui.FontWidth
+	dw.scroll.Offset.X = dw.scroll.Offset.X + internal.FontWidth
 	dw.scroll.Refresh()
 }
 
 func (dw *DiffWidget) OnArrowLeft() {
-	dw.scroll.Offset.X = dw.scroll.Offset.X - ui.FontWidth
+	dw.scroll.Offset.X = dw.scroll.Offset.X - internal.FontWidth
 	dw.scroll.Refresh()
 }

@@ -6,7 +6,7 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	"github.com/dorin-suletea/diferentiador~/ui"
+	"github.com/dorin-suletea/diferentiador~/internal"
 )
 
 type SelectionHandler func(FileStatus)
@@ -19,7 +19,7 @@ func newFilesStatusList(data []FileStatus) *widget.List {
 		func() fyne.CanvasObject {
 			placeholderStatusIcon := widget.NewIcon(theme.ConfirmIcon())
 			placeholderFileName := widget.NewLabel("")
-			placeholderFileName.TextStyle = ui.FontMono
+			placeholderFileName.TextStyle = internal.FontMono
 
 			return container.New(layout.NewHBoxLayout(), widget.NewLabel(" "), placeholderStatusIcon, placeholderFileName, layout.NewSpacer())
 		},
@@ -72,7 +72,7 @@ func pickIconPath(item FileStatus) string {
 // StatusWidget
 // ----------------------
 type StatusWidget struct {
-	*ui.FocusComponent
+	*internal.FocusComponent
 	scroll         *container.Scroll
 	nestedList     *widget.List
 	selectionIndex int
@@ -85,7 +85,7 @@ func NewStatusWidget(data []FileStatus, onSelected SelectionHandler) *StatusWidg
 
 	scroll := container.NewScroll(list)
 
-	ret := &StatusWidget{ui.NewFocusComponent(scroll), scroll, list, 0, data, onSelected}
+	ret := &StatusWidget{internal.NewFocusComponent(scroll), scroll, list, 0, data, onSelected}
 	if len(data) != 0 {
 		ret.selectItem(0)
 	}

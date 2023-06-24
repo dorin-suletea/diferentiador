@@ -7,17 +7,17 @@ package main
 
 import (
 	"fyne.io/fyne/v2"
+	"github.com/dorin-suletea/diferentiador~/internal"
 	"github.com/dorin-suletea/diferentiador~/internal/diff"
 	"github.com/dorin-suletea/diferentiador~/internal/status"
-	"github.com/dorin-suletea/diferentiador~/ui"
 )
 
 const refreshRateSeconds int = 10
 
 func main() {
-	app := ui.NewApp()
+	app := internal.NewApp()
 
-	// diff widget, center
+	// diff widget, centerss
 	diffWidget := diff.NewDiffWidget([]fyne.CanvasObject{})
 	statusCache := status.NewChangedFilesCache(refreshRateSeconds)
 
@@ -44,11 +44,11 @@ func main() {
 	app.AddComponent(statusWidget)
 	app.AddComponent(diffWidget)
 
-	app.AddShortcut(ui.ShCycleFocus, func() { app.CycleFocus() })
-	app.AddShortcut(ui.ShArrowDown, func() { app.OnArrowDown() })
-	app.AddShortcut(ui.ShArrowUp, func() { app.OnArrowUp() })
-	app.AddShortcut(ui.ShArrowRight, func() { app.OnArrowRight() })
-	app.AddShortcut(ui.ShArrowLeft, func() { app.OnArrowLeft() })
+	app.AddShortcut(internal.ShCycleFocus, func() { app.CycleFocus() })
+	app.AddShortcut(internal.ShArrowDown, func() { app.OnArrowDown() })
+	app.AddShortcut(internal.ShArrowUp, func() { app.OnArrowUp() })
+	app.AddShortcut(internal.ShArrowRight, func() { app.OnArrowRight() })
+	app.AddShortcut(internal.ShArrowLeft, func() { app.OnArrowLeft() })
 	app.ShowAndRun()
 }
 
