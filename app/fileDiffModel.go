@@ -16,21 +16,12 @@ type FileDifCache struct {
 	diffContentMap map[FileStatus]string
 	lastRefreshed  int64
 	onRefreshed    func()
+
+	fscache *FileStatusCache
 }
 
-func NewFileDiffCache(keys []FileStatus, refreshSeconds int) *FileDifCache {
-	// TODO :  this must receive the actual cache
-	contentMap := make(map[FileStatus]string)
-	for _, fs := range keys {
-		contentMap[fs] = ""
-	}
-
-	ret := FileDifCache{contentMap, 0, func() { /*no-op*/ }}
-	// TODO : this can be done with Promises/channels. Start the cron and block on reader.
-	// refresh first blocking and lazily the rest
-	if len(keys) != 0 {
-		ret.diffContentMap[keys[0]] = ret.invokeGitBindings(keys[0])
-	}
+func NewFileDiffCache(fsCache *FileStatusCache, refreshSeconds int) *FileDifCache {
+	ret := FileDifCache{nil, 0, func() { /*no-op*/ }, fsCache}
 	ret.startCron(refreshSeconds)
 
 	return &ret
@@ -44,21 +35,34 @@ func (gd *FileDifCache) GetContent(key FileStatus) string {
 	return gd.diffContentMap[key]
 }
 
-func (gd *FileDifCache) refresh() {
-	for key := range gd.diffContentMap {
-		gd.diffContentMap[key] = gd.invokeGitBindings(key)
+func (t *FileDifCache) refresh() {
+	keys := t.fscache.GetChangedFiles()
+	content := make(map[FileStatus]string, len(keys))
+	for _, key := range keys {
+		content[key] = t.invokeGitBindings(key)
 	}
-	gd.lastRefreshed = time.Now().Unix()
-	gd.onRefreshed()
+	t.diffContentMap = content
+	t.lastRefreshed = time.Now().Unix()
+	t.onRefreshed()
 }
 
-func (gd *FileDifCache) startCron(refreshSeconds int) {
-	go func(refreshSeconds int) {
-		gd.refresh()
-		for range time.Tick(time.Second * time.Duration(refreshSeconds)) {
-			gd.refresh()
+func (t *FileDifCache) startCron(refreshSeconds int) {
+	go func(refreshSeconds int, tLocal *FileDifCache) {
+		//a) Load the first file diff (autoselected) as soon as possible.
+		keys := tLocal.fscache.GetChangedFiles()
+		if len(keys) != 0 {
+			tLocal.diffContentMap = map[FileStatus]string{
+				keys[0]: tLocal.invokeGitBindings(keys[0]),
+			}
+			tLocal.onRefreshed()
 		}
-	}(refreshSeconds)
+		//b) Load all other file difs. After this the user can select different files and see content
+		t.refresh()
+		//c) Keep refreshing the cache on a cron in case new files are added or removed.
+		for range time.Tick(time.Second * time.Duration(refreshSeconds)) {
+			t.refresh()
+		}
+	}(refreshSeconds, t)
 }
 
 // Files with different status (modified, deleted, untracked) are issuing different commands for their diff
