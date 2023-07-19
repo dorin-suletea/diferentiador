@@ -34,3 +34,7 @@ func (t *Promise[RT]) Get() RT {
 	t.mtx.Unlock()
 	return *t.result
 }
+
+type Listener interface {
+	HandleEvent()
+}

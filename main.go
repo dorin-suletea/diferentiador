@@ -26,7 +26,8 @@ func main() {
 	}
 
 	// widgets
-	statusWidget := app.NewChangedFilesWidget(fileCache, selectionHandler)
+	fileWidget := app.NewChangedFilesWidget(fileCache, selectionHandler)
+	fileCache.RegisterListener(fileWidget)
 
 	diffWidget := app.NewDiffWidget([]fyne.CanvasObject{})
 
@@ -34,15 +35,15 @@ func main() {
 
 	// Update the active diff windown whenever the diff cache is refreshed s
 	diffCache.SetOnRefreshHandler(func() {
-		selection := statusWidget.GetSelected()
+		selection := fileWidget.GetSelected()
 		diffContent := diffCache.GetContent(selection)
 		diffWidget.SetContent(diffContent)
 	})
-	fileCache.SetOnRefreshHandler(func() {
-		statusWidget.SetContent(fileCache.GetAll())
-	})
+	// fileCache.SetOnRefreshHandler(func() {
+	// 	statusWidget.SetContent(fileCache.GetAll())
+	// })
 
-	application.AddComponent(statusWidget)
+	application.AddComponent(fileWidget)
 	application.AddComponent(diffWidget)
 
 	application.AddShortcut(internal.ShCycleFocus, func() { application.CycleFocus() })
