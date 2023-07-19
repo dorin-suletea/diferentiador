@@ -36,7 +36,7 @@ func (gd *FileDifCache) GetContent(key FileStatus) string {
 }
 
 func (t *FileDifCache) refresh() {
-	keys := t.fscache.GetChangedFiles()
+	keys := t.fscache.GetAll()
 	content := make(map[FileStatus]string, len(keys))
 	for _, key := range keys {
 		content[key] = t.invokeGitBindings(key)
@@ -49,7 +49,7 @@ func (t *FileDifCache) refresh() {
 func (t *FileDifCache) startCron(refreshSeconds int) {
 	go func(refreshSeconds int, tLocal *FileDifCache) {
 		//a) Load the first file diff (autoselected) as soon as possible.
-		keys := tLocal.fscache.GetChangedFiles()
+		keys := tLocal.fscache.GetAll()
 		if len(keys) != 0 {
 			tLocal.diffContentMap = map[FileStatus]string{
 				keys[0]: tLocal.invokeGitBindings(keys[0]),

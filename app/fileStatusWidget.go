@@ -69,24 +69,24 @@ func pickIconPath(item FileStatus) string {
 }
 
 // ----------------------
-// StatusWidget
+// ChangedFilesWidget
 // ----------------------
-type StatusWidget struct {
+type ChangedFilesWidget struct {
 	*internal.FocusComponent
 	scroll         *container.Scroll
 	nestedList     *widget.List
 	selectionIndex int
-	data           []FileStatus
+	data           *ChangedFileCache
 	onSelected     SelectionHandler
 }
 
-func NewStatusWidget(data []FileStatus, onSelected SelectionHandler) *StatusWidget {
-	list := newFilesStatusList(data)
+func NewChangedFilesWidget(data *ChangedFileCache, onSelected SelectionHandler) *ChangedFilesWidget {
+	list := newFilesStatusList(data.GetAll())
 
 	scroll := container.NewScroll(list)
 
-	ret := &StatusWidget{internal.NewFocusComponent(scroll), scroll, list, 0, data, onSelected}
-	if len(data) != 0 {
+	ret := &ChangedFilesWidget{internal.NewFocusComponent(scroll), scroll, list, 0, data, onSelected}
+	if data.Len() != 0 {
 		ret.selectItem(0)
 	}
 
@@ -94,15 +94,14 @@ func NewStatusWidget(data []FileStatus, onSelected SelectionHandler) *StatusWidg
 	return ret
 }
 
-func (dw *StatusWidget) setSelectionHandlers() {
+func (dw *ChangedFilesWidget) setSelectionHandlers() {
 	dw.nestedList.OnSelected = func(i widget.ListItemID) {
-		dw.onSelected(dw.data[i])
+		dw.onSelected(dw.data.Get(i))
 		dw.selectionIndex = i
 	}
 }
 
-func (dw *StatusWidget) SetContent(newData []FileStatus) {
-	dw.data = newData
+func (dw *ChangedFilesWidget) setContent(newData []FileStatus) {
 	dw.nestedList = newFilesStatusList(newData)
 	dw.scroll.Content = dw.nestedList
 	dw.setSelectionHandlers()
@@ -110,35 +109,35 @@ func (dw *StatusWidget) SetContent(newData []FileStatus) {
 	dw.scroll.Refresh()
 }
 
-func (dw *StatusWidget) OnArrowDown() {
-	dw.selectionIndex = (dw.selectionIndex + 1) % len(dw.data)
+func (dw *ChangedFilesWidget) OnArrowDown() {
+	dw.selectionIndex = (dw.selectionIndex + 1) % dw.data.Len()
 	dw.selectItem(dw.selectionIndex)
 }
 
-func (dw *StatusWidget) OnArrowUp() {
+func (dw *ChangedFilesWidget) OnArrowUp() {
 	newIndex := dw.selectionIndex - 1
 
 	if newIndex >= 0 {
 		dw.selectionIndex = newIndex
 	} else {
-		dw.selectionIndex = len(dw.data) + newIndex
+		dw.selectionIndex = dw.data.Len() + newIndex
 	}
 	dw.selectItem(dw.selectionIndex)
 }
 
-func (dw *StatusWidget) OnArrowRight() {
+func (dw *ChangedFilesWidget) OnArrowRight() {
 	//no-op
 }
 
-func (dw *StatusWidget) OnArrowLeft() {
+func (dw *ChangedFilesWidget) OnArrowLeft() {
 	//no-op
 }
 
-func (dw *StatusWidget) selectItem(index int) {
-	dw.onSelected(dw.data[index])
-	dw.nestedList.Select(index)
+func (dw *ChangedFilesWidget) selectItem(i int) {
+	dw.onSelected(dw.data.Get(i))
+	dw.nestedList.Select(i)
 }
 
-func (dw *StatusWidget) GetSelected() FileStatus {
-	return dw.data[dw.selectionIndex]
+func (dw *ChangedFilesWidget) GetSelected() FileStatus {
+	return dw.data.Get(dw.selectionIndex)
 }

@@ -27,13 +27,26 @@ func NewChangedFilesCache(refreshSeconds int) *ChangedFileCache {
 	return ret
 }
 
-func (t *ChangedFileCache) GetChangedFiles() []FileStatus {
+func (t *ChangedFileCache) GetAll() []FileStatus {
 	if !t.boostrapDone {
 		t.status = t.bootstrapPromise.Get()
 		t.boostrapDone = true
 	}
 
 	return t.status
+}
+
+func (t *ChangedFileCache) Get(i int) FileStatus {
+	if !t.boostrapDone {
+		t.status = t.bootstrapPromise.Get()
+		t.boostrapDone = true
+	}
+
+	return t.status[i]
+}
+
+func (t *ChangedFileCache) Len() int {
+	return len(t.status)
 }
 
 func (t *ChangedFileCache) SetOnRefreshHandler(handler func()) {

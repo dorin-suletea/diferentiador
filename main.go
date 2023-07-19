@@ -19,17 +19,18 @@ func main() {
 	diffCache := app.DiffCache(fileCache, refreshRateSeconds)
 
 	// caches
+	selectionHandler := func(f app.FileStatus) {
+		//TODO : must receive params, this is not safe
+		// content := diffCache.GetContent(f)
+		// diffWidget.SetContent(content)
+	}
+
+	// widgets
+	statusWidget := app.NewChangedFilesWidget(fileCache, selectionHandler)
 
 	diffWidget := app.NewDiffWidget([]fyne.CanvasObject{})
 
-	selectionHandler := func(f app.FileStatus) {
-		//TODO : must receive params, this is not safe
-		content := diffCache.GetContent(f)
-		diffWidget.SetContent(content)
-	}
-
 	// TODOL This waits on the git status, and is anemic must pass the cache,
-	statusWidget := app.NewStatusWidget(fileCache.GetChangedFiles(), selectionHandler)
 
 	// Update the active diff windown whenever the diff cache is refreshed s
 	diffCache.SetOnRefreshHandler(func() {
@@ -38,7 +39,7 @@ func main() {
 		diffWidget.SetContent(diffContent)
 	})
 	fileCache.SetOnRefreshHandler(func() {
-		statusWidget.SetContent(fileCache.GetChangedFiles())
+		statusWidget.SetContent(fileCache.GetAll())
 	})
 
 	application.AddComponent(statusWidget)
