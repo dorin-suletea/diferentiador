@@ -12,23 +12,21 @@ import (
 )
 
 type FileDifCache struct {
-	// maps each file to it's diff
-	diffContentMap map[FileStatus]string
-	lastRefreshed  int64
-	onRefreshed    func()
+	diffContentMap   map[FileStatus]string
+	lastRefreshed    int64
+	refreshListeners []internal.CacheListener
 
 	fscache *ChangedFileCache
 }
 
 func DiffCache(fsCache *ChangedFileCache, refreshSeconds int) *FileDifCache {
-	ret := FileDifCache{nil, 0, func() { /*no-op*/ }, fsCache}
+	ret := FileDifCache{nil, 0, []internal.CacheListener{}, fsCache}
 	ret.startCron(refreshSeconds)
-
 	return &ret
 }
 
-func (gd *FileDifCache) SetOnRefreshHandler(handler func()) {
-	gd.onRefreshed = handler
+func (t *FileDifCache) RegisterCacheListener(listener internal.CacheListener) {
+	t.refreshListeners = append(t.refreshListeners, listener)
 }
 
 func (gd *FileDifCache) GetContent(key FileStatus) string {
@@ -43,19 +41,28 @@ func (t *FileDifCache) refresh() {
 	}
 	t.diffContentMap = content
 	t.lastRefreshed = time.Now().Unix()
-	t.onRefreshed()
+
+	for i := range t.refreshListeners {
+		t.refreshListeners[i].OnCacheRefreshed()
+	}
+
 }
 
 func (t *FileDifCache) startCron(refreshSeconds int) {
 	go func(refreshSeconds int, tLocal *FileDifCache) {
+		//TODO : is this worth it?
+
 		//a) Load the first file diff (autoselected) as soon as possible.
-		keys := tLocal.fscache.GetAll()
-		if len(keys) != 0 {
-			tLocal.diffContentMap = map[FileStatus]string{
-				keys[0]: tLocal.invokeGitBindings(keys[0]),
-			}
-			tLocal.onRefreshed()
-		}
+		// temp disabled
+		// keys := tLocal.fscache.GetAll()
+		// if len(keys) != 0 {
+		// 	tLocal.diffContentMap = map[FileStatus]string{
+		// 		keys[0]: tLocal.invokeGitBindings(keys[0]),
+		// 	}
+		// 	// for i := range t.refreshListeners {
+		// 	// 	t.refreshListeners[i].OnCacheRefreshed()
+		// 	// }
+		// }
 		//b) Load all other file difs. After this the user can select different files and see content
 		t.refresh()
 		//c) Keep refreshing the cache on a cron in case new files are added or removed.
