@@ -36,3 +36,7 @@ func (t *Promise[RT]) Get() RT {
 	t.mtx.Unlock()
 	return *t.result
 }
+
+type CacheListener interface {
+	OnCacheRefreshed()
+}

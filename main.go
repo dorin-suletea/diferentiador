@@ -15,26 +15,11 @@ const refreshRateSeconds int = 10
 func main() {
 	application := internal.NewApp()
 	fileCache := app.NewChangedFilesCache(refreshRateSeconds)
-	diffCache := app.DiffCache(fileCache, refreshRateSeconds)
-
-	fileWidget := app.NewChangedFilesWidget(fileCache)
-	fileCache.RegisterCacheListener(fileWidget)
-
-	// widgets
+	diffCache := app.DiffCache(fileCache, refreshRateSeconds*2)
 
 	diffWidget := app.NewDiffWidget(diffCache)
-
-	// TODOL This waits on the git status, and is anemic must pass the cache,
-
-	// Update the active diff windown whenever the diff cache is refreshed s
-	diffCache.SetOnRefreshHandler(func() {
-		selection := fileWidget.GetSelected()
-		diffContent := diffCache.GetContent(selection)
-		diffWidget.SetContent(diffContent)
-	})
-	// fileCache.SetOnRefreshHandler(func() {
-	// 	statusWidget.SetContent(fileCache.GetAll())
-	// })
+	fileWidget := app.NewChangedFilesWidget(fileCache, diffWidget)
+	fileCache.RegisterCacheListener(fileWidget)
 
 	application.AddComponent(fileWidget)
 	application.AddComponent(diffWidget)
