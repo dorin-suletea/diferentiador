@@ -15,12 +15,13 @@ const refreshRateSeconds int = 10
 
 func main() {
 	application := internal.NewApp()
+	fileCache := app.NewChangedFilesCache(refreshRateSeconds)
+	diffCache := app.DiffCache(fileCache, refreshRateSeconds)
 
-	// diff widget, centerss
+	// caches
+
 	diffWidget := app.NewDiffWidget([]fyne.CanvasObject{})
-	statusCache := app.NewChangedFilesCache(refreshRateSeconds)
 
-	diffCache := app.NewFileDiffCache(statusCache, refreshRateSeconds)
 	selectionHandler := func(f app.FileStatus) {
 		//TODO : must receive params, this is not safe
 		content := diffCache.GetContent(f)
@@ -28,7 +29,7 @@ func main() {
 	}
 
 	// TODOL This waits on the git status, and is anemic must pass the cache,
-	statusWidget := app.NewStatusWidget(statusCache.GetChangedFiles(), selectionHandler)
+	statusWidget := app.NewStatusWidget(fileCache.GetChangedFiles(), selectionHandler)
 
 	// Update the active diff windown whenever the diff cache is refreshed s
 	diffCache.SetOnRefreshHandler(func() {
@@ -36,8 +37,8 @@ func main() {
 		diffContent := diffCache.GetContent(selection)
 		diffWidget.SetContent(diffContent)
 	})
-	statusCache.SetOnRefreshHandler(func() {
-		statusWidget.SetContent(statusCache.GetChangedFiles())
+	fileCache.SetOnRefreshHandler(func() {
+		statusWidget.SetContent(fileCache.GetChangedFiles())
 	})
 
 	application.AddComponent(statusWidget)

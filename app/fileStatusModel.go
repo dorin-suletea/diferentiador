@@ -9,7 +9,7 @@ import (
 
 type Status string
 
-type FileStatusCache struct {
+type ChangedFileCache struct {
 	status        []FileStatus
 	lastRefreshed int64
 	onRefreshed   func()
@@ -18,16 +18,16 @@ type FileStatusCache struct {
 	bootstrapPromise internal.Promise[[]FileStatus]
 }
 
-func NewChangedFilesCache(refreshSeconds int) *FileStatusCache {
+func NewChangedFilesCache(refreshSeconds int) *ChangedFileCache {
 	boostrapPromise := internal.NewPromise(func() []FileStatus {
 		return getStatusForFiles()
 	})
-	ret := &FileStatusCache{[]FileStatus{}, 0, func() { /*no op*/ }, false, boostrapPromise}
+	ret := &ChangedFileCache{[]FileStatus{}, 0, func() { /*no op*/ }, false, boostrapPromise}
 	ret.startCron(refreshSeconds)
 	return ret
 }
 
-func (t *FileStatusCache) GetChangedFiles() []FileStatus {
+func (t *ChangedFileCache) GetChangedFiles() []FileStatus {
 	if !t.boostrapDone {
 		t.status = t.bootstrapPromise.Get()
 		t.boostrapDone = true
@@ -36,19 +36,19 @@ func (t *FileStatusCache) GetChangedFiles() []FileStatus {
 	return t.status
 }
 
-func (t *FileStatusCache) SetOnRefreshHandler(handler func()) {
+func (t *ChangedFileCache) SetOnRefreshHandler(handler func()) {
 	t.onRefreshed = handler
 }
 
-func (t *FileStatusCache) startCron(refreshSeconds int) {
-	go func(refreshSeconds int, gdLocal *FileStatusCache) {
+func (t *ChangedFileCache) startCron(refreshSeconds int) {
+	go func(refreshSeconds int, gdLocal *ChangedFileCache) {
 		for range time.Tick(time.Second * time.Duration(refreshSeconds)) {
 			gdLocal.refresh()
 		}
 	}(refreshSeconds, t)
 }
 
-func (t *FileStatusCache) refresh() {
+func (t *ChangedFileCache) refresh() {
 	t.status = getStatusForFiles()
 	t.lastRefreshed = time.Now().Unix()
 	t.onRefreshed()

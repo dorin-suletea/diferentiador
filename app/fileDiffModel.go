@@ -17,10 +17,10 @@ type FileDifCache struct {
 	lastRefreshed  int64
 	onRefreshed    func()
 
-	fscache *FileStatusCache
+	fscache *ChangedFileCache
 }
 
-func NewFileDiffCache(fsCache *FileStatusCache, refreshSeconds int) *FileDifCache {
+func DiffCache(fsCache *ChangedFileCache, refreshSeconds int) *FileDifCache {
 	ret := FileDifCache{nil, 0, func() { /*no-op*/ }, fsCache}
 	ret.startCron(refreshSeconds)
 
