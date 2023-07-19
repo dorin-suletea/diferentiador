@@ -6,7 +6,6 @@ package main
 //go run fyne.io/fyne/v2/cmd/fyne_demo@latest
 
 import (
-	"fyne.io/fyne/v2"
 	"github.com/dorin-suletea/diferentiador~/app"
 	"github.com/dorin-suletea/diferentiador~/internal"
 )
@@ -18,18 +17,12 @@ func main() {
 	fileCache := app.NewChangedFilesCache(refreshRateSeconds)
 	diffCache := app.DiffCache(fileCache, refreshRateSeconds)
 
-	// caches
-	selectionHandler := func(f app.FileStatus) {
-		//TODO : must receive params, this is not safe
-		// content := diffCache.GetContent(f)
-		// diffWidget.SetContent(content)
-	}
+	fileWidget := app.NewChangedFilesWidget(fileCache)
+	fileCache.RegisterCacheListener(fileWidget)
 
 	// widgets
-	fileWidget := app.NewChangedFilesWidget(fileCache, selectionHandler)
-	fileCache.RegisterListener(fileWidget)
 
-	diffWidget := app.NewDiffWidget([]fyne.CanvasObject{})
+	diffWidget := app.NewDiffWidget(diffCache)
 
 	// TODOL This waits on the git status, and is anemic must pass the cache,
 

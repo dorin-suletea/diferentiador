@@ -1,6 +1,8 @@
 package internal
 
-import "sync"
+import (
+	"sync"
+)
 
 // The app needs initial data in both file_status and file_diff caches to continue with UI initializations.
 // Insetead of issiong a blocking request to git on cache creation, we do it async
@@ -33,8 +35,4 @@ func (t *Promise[RT]) Get() RT {
 	}
 	t.mtx.Unlock()
 	return *t.result
-}
-
-type Listener interface {
-	HandleEvent()
 }

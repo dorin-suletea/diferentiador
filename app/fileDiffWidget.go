@@ -43,6 +43,8 @@ func contentAsLabels(content string) []fyne.CanvasObject {
 	return asCanvas
 }
 
+var _ FileWidgetListener = (*DiffWidget)(nil)
+
 // ----------------------
 // DiffWidget
 // ----------------------
@@ -50,16 +52,18 @@ type DiffWidget struct {
 	*internal.FocusComponent
 	scroll   *container.Scroll
 	labelBox *fyne.Container
+	data     *FileDifCache
 }
 
-func NewDiffWidget(lineLabels []fyne.CanvasObject) *DiffWidget {
-	labelBox := container.NewVBox(lineLabels...)
+func NewDiffWidget(data *FileDifCache) *DiffWidget {
+	labelBox := container.NewVBox()
 	scroll := container.NewScroll(labelBox)
-	return &DiffWidget{internal.NewFocusComponent(scroll), scroll, labelBox} //scroll
+	return &DiffWidget{internal.NewFocusComponent(scroll), scroll, labelBox, data}
 }
 
-func (dw *DiffWidget) SetContent(diff string) {
-	linesAsLabels := contentAsLabels(diff)
+func (dw *DiffWidget) OnFileSelected(selection FileStatus) {
+	lines := dw.data.GetContent(selection)
+	linesAsLabels := contentAsLabels(lines)
 	dw.labelBox = container.NewVBox(linesAsLabels...)
 	dw.scroll.Content = dw.labelBox
 	dw.scroll.Refresh()
