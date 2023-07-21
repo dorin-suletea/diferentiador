@@ -13,7 +13,6 @@ import (
 const refreshRateSeconds int = 1
 
 func main() {
-	//TODO : crash on running with no files
 	//TODO: crash when deleting a selected file
 	application := internal.NewApp()
 	fileCache := app.NewChangedFilesCache(refreshRateSeconds)

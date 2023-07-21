@@ -1,6 +1,7 @@
 package app
 
 import (
+	"errors"
 	"strings"
 	"time"
 
@@ -40,13 +41,16 @@ func (t *ChangedFileCache) GetAll() []FileStatus {
 	return t.status
 }
 
-func (t *ChangedFileCache) Get(i int) FileStatus {
+func (t *ChangedFileCache) Get(i int) (FileStatus, error) {
 	if !t.boostrapDone {
 		t.status = t.bootstrapPromise.Get()
 		t.boostrapDone = true
 	}
+	if len(t.status) == 0 {
+		return FileStatus{}, errors.New("empty changed files cache")
+	}
 
-	return t.status[i]
+	return t.status[i], nil
 }
 
 func (t *ChangedFileCache) Len() int {

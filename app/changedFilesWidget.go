@@ -1,6 +1,8 @@
 package app
 
 import (
+	"fmt"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
@@ -135,11 +137,13 @@ func (dw *ChangedFilesWidget) OnArrowLeft() {
 }
 
 func (dw *ChangedFilesWidget) selectItem(i int) {
-	dw.diffWidget.ShowDiffForFile(dw.data.Get(i))
+	changedFile, err := dw.data.Get(i)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	dw.diffWidget.ShowDiffForFile(changedFile)
 	dw.selectionIndex = i
 	dw.nestedList.Select(i)
-}
-
-func (dw *ChangedFilesWidget) GetSelected() FileStatus {
-	return dw.data.Get(dw.selectionIndex)
 }
