@@ -1,8 +1,6 @@
 package app
 
 import (
-	"fmt"
-
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
@@ -139,7 +137,7 @@ func (dw *ChangedFilesWidget) OnArrowLeft() {
 func (dw *ChangedFilesWidget) selectItem(i int) {
 	changedFile, err := dw.data.Get(i)
 	if err != nil {
-		fmt.Println(err)
+		// empty file cache, silent
 		return
 	}
 

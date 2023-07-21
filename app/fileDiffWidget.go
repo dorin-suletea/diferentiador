@@ -9,40 +9,6 @@ import (
 	"github.com/dorin-suletea/diferentiador~/internal"
 )
 
-func contentAsLabels(content string) []fyne.CanvasObject {
-
-	uiLines := []*canvas.Text{}
-	for _, line := range strings.Split(strings.TrimSuffix(content, "\n"), "\n") {
-
-		if len(line) == 0 {
-			tw := canvas.NewText(line, internal.Gray)
-			uiLines = append(uiLines, tw)
-			continue
-		}
-
-		switch line[0] {
-		case '-':
-			tw := canvas.NewText(line, internal.Red)
-			tw.TextStyle = internal.FontMono
-			uiLines = append(uiLines, tw)
-		case '+':
-			tw := canvas.NewText(line, internal.Green)
-			tw.TextStyle = internal.FontMono
-			uiLines = append(uiLines, tw)
-		default:
-			tw := canvas.NewText(line, internal.Gray)
-			tw.TextStyle = internal.FontMono
-			uiLines = append(uiLines, tw)
-		}
-	}
-
-	asCanvas := make([]fyne.CanvasObject, len(uiLines))
-	for i, val := range uiLines {
-		asCanvas[i] = val
-	}
-	return asCanvas
-}
-
 var _ internal.CacheListener = (*DiffWidget)(nil)
 
 // ----------------------
@@ -93,4 +59,38 @@ func (dw *DiffWidget) OnArrowRight() {
 func (dw *DiffWidget) OnArrowLeft() {
 	dw.scroll.Offset.X = dw.scroll.Offset.X - internal.FontWidth
 	dw.scroll.Refresh()
+}
+
+func contentAsLabels(content string) []fyne.CanvasObject {
+
+	uiLines := []*canvas.Text{}
+	for _, line := range strings.Split(strings.TrimSuffix(content, "\n"), "\n") {
+
+		if len(line) == 0 {
+			tw := canvas.NewText(line, internal.Gray)
+			uiLines = append(uiLines, tw)
+			continue
+		}
+
+		switch line[0] {
+		case '-':
+			tw := canvas.NewText(line, internal.Red)
+			tw.TextStyle = internal.FontMono
+			uiLines = append(uiLines, tw)
+		case '+':
+			tw := canvas.NewText(line, internal.Green)
+			tw.TextStyle = internal.FontMono
+			uiLines = append(uiLines, tw)
+		default:
+			tw := canvas.NewText(line, internal.Gray)
+			tw.TextStyle = internal.FontMono
+			uiLines = append(uiLines, tw)
+		}
+	}
+
+	asCanvas := make([]fyne.CanvasObject, len(uiLines))
+	for i, val := range uiLines {
+		asCanvas[i] = val
+	}
+	return asCanvas
 }

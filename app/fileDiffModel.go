@@ -2,6 +2,8 @@ package app
 
 import (
 	"bytes"
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -37,7 +39,12 @@ func (t *FileDifCache) refresh() {
 	keys := t.fscache.GetAll()
 	content := make(map[FileStatus]string, len(keys))
 	for _, key := range keys {
-		content[key] = t.invokeGitBindings(key)
+		diff, err := t.invokeGitBindings(key)
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			content[key] = diff
+		}
 	}
 	t.diffContentMap = content
 	t.lastRefreshed = time.Now().Unix()
@@ -45,27 +52,13 @@ func (t *FileDifCache) refresh() {
 	for i := range t.refreshListeners {
 		t.refreshListeners[i].OnCacheRefreshed()
 	}
-
 }
 
 func (t *FileDifCache) startCron(refreshSeconds int) {
 	go func(refreshSeconds int, tLocal *FileDifCache) {
-		//TODO : is this worth it?
-
-		//a) Load the first file diff (autoselected) as soon as possible.
-		// temp disabled
-		// keys := tLocal.fscache.GetAll()
-		// if len(keys) != 0 {
-		// 	tLocal.diffContentMap = map[FileStatus]string{
-		// 		keys[0]: tLocal.invokeGitBindings(keys[0]),
-		// 	}
-		// 	// for i := range t.refreshListeners {
-		// 	// 	t.refreshListeners[i].OnCacheRefreshed()
-		// 	// }
-		// }
-		//b) Load all other file difs. After this the user can select different files and see content
+		//a) eagerly refresh as soon as possible
 		t.refresh()
-		//c) Keep refreshing the cache on a cron in case new files are added or removed.
+		//b) Keep refreshing the cache on a cron in case new files are added or removed.
 		for range time.Tick(time.Second * time.Duration(refreshSeconds)) {
 			t.refresh()
 		}
@@ -73,23 +66,21 @@ func (t *FileDifCache) startCron(refreshSeconds int) {
 }
 
 // Files with different status (modified, deleted, untracked) are issuing different commands for their diff
-func (gd *FileDifCache) invokeGitBindings(key FileStatus) string {
+func (gd *FileDifCache) invokeGitBindings(key FileStatus) (string, error) {
 	// TODO : fixme. Modified staged dont show
 	switch key.Status {
 	case Untracked:
-		return getRawFileContents(key.FilePath)
+		return getRawFileContents(key.FilePath), nil
 	case Modified:
-		return getDiffForFile(key.FilePath)
+		return getDiffForFile(key.FilePath), nil
 	case Added:
-		return markLines(getRawFileContents(key.FilePath), '+')
+		return markLines(getRawFileContents(key.FilePath), '+'), nil
 	case Renamed:
-		return key.FilePath
+		return key.FilePath, nil
 	case Deleted:
-		return markLines(getHeadForFile(key.FilePath), '-')
-
+		return markLines(getHeadForFile(key.FilePath), '-'), nil
 	}
-	// TODO handle properly
-	panic("Invalid status" + key.Status)
+	return "", errors.New("Unknown status" + string(key.Status))
 }
 
 func getDiffForFile(filePath string) string {

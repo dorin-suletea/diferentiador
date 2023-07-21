@@ -10,10 +10,9 @@ import (
 	"github.com/dorin-suletea/diferentiador~/internal"
 )
 
-const refreshRateSeconds int = 1
+const refreshRateSeconds int = 5
 
 func main() {
-	//TODO: crash when deleting a selected file
 	application := internal.NewApp()
 	fileCache := app.NewChangedFilesCache(refreshRateSeconds)
 	diffCache := app.DiffCache(fileCache, refreshRateSeconds)
