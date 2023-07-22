@@ -14,16 +14,16 @@ type ChangedFileCache struct {
 	status           []FileStatus
 	lastRefreshed    int64
 	refreshListeners []internal.CacheListener
-
+	gitWorkDir       string
 	boostrapDone     bool
 	bootstrapPromise internal.Promise[[]FileStatus]
 }
 
-func NewChangedFilesCache(refreshSeconds int) *ChangedFileCache {
+func NewChangedFilesCache(workDir string, refreshSeconds int) *ChangedFileCache {
 	boostrapPromise := internal.NewPromise(func() []FileStatus {
-		return getStatusForFiles()
+		return getStatusForFiles(workDir)
 	})
-	ret := &ChangedFileCache{[]FileStatus{}, 0, []internal.CacheListener{}, false, boostrapPromise}
+	ret := &ChangedFileCache{[]FileStatus{}, 0, []internal.CacheListener{}, workDir, false, boostrapPromise}
 	ret.startCron(refreshSeconds)
 	return ret
 }
@@ -66,7 +66,7 @@ func (t *ChangedFileCache) startCron(refreshSeconds int) {
 }
 
 func (t *ChangedFileCache) refresh() {
-	t.status = getStatusForFiles()
+	t.status = getStatusForFiles(t.gitWorkDir)
 	t.lastRefreshed = time.Now().Unix()
 	for i := range t.refreshListeners {
 		t.refreshListeners[i].OnCacheRefreshed()
@@ -98,9 +98,9 @@ const (
 	Untracked Status = "u"
 )
 
-func getStatusForFiles() []FileStatus {
+func getStatusForFiles(workDir string) []FileStatus {
 	// alternatively `internal.RunCmd("git", "status", "-s", "-u")``
-	rawGitStatus := internal.RunCmd("git", "status", "--porcelain")
+	rawGitStatus := internal.Git(workDir, "status", "--porcelain")
 	lines := filterEmptyLines(strings.Split(rawGitStatus, "\n"))
 
 	// TODO : there are many more status

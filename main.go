@@ -13,9 +13,11 @@ import (
 const refreshRateSeconds int = 5
 
 func main() {
+	workDir := "../test_gd"
+
 	application := internal.NewApp()
-	fileCache := app.NewChangedFilesCache(refreshRateSeconds)
-	diffCache := app.DiffCache(fileCache, refreshRateSeconds)
+	fileCache := app.NewChangedFilesCache(workDir, refreshRateSeconds)
+	diffCache := app.DiffCache(fileCache, workDir, refreshRateSeconds)
 
 	diffWidget := app.NewDiffWidget(diffCache)
 	fileWidget := app.NewChangedFilesWidget(fileCache, diffWidget)

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -17,10 +18,11 @@ type FileDifCache struct {
 	lastRefreshed    int64
 	refreshListeners []internal.CacheListener
 	fscache          *ChangedFileCache
+	gitWorkDir       string
 }
 
-func DiffCache(fsCache *ChangedFileCache, refreshSeconds int) *FileDifCache {
-	ret := FileDifCache{nil, 0, []internal.CacheListener{}, fsCache}
+func DiffCache(fsCache *ChangedFileCache, workDir string, refreshSeconds int) *FileDifCache {
+	ret := FileDifCache{nil, 0, []internal.CacheListener{}, fsCache, workDir}
 	ret.startCron(refreshSeconds)
 	return &ret
 }
@@ -48,7 +50,7 @@ func (t *FileDifCache) refresh() {
 	keys := t.fscache.GetAll()
 	content := make(map[FileStatus]string, len(keys))
 	for _, key := range keys {
-		diff, err := runGitDiff(key)
+		diff, err := runGitDiff(t.gitWorkDir, key)
 		if err != nil {
 			fmt.Println(err)
 		} else {
@@ -64,35 +66,36 @@ func (t *FileDifCache) refresh() {
 }
 
 // Files with different statuses(modified, deleted, untracked etc) need different approaches to extracting their content.
-func runGitDiff(key FileStatus) (string, error) {
+func runGitDiff(workdir string, key FileStatus) (string, error) {
 	// TODO : fixme. Modified staged dont show
 	switch key.Status {
 	case Untracked:
-		return readFileDirectly(key.FilePath), nil
+		return readFileDirectly(workdir, key), nil
 	case Modified:
-		return internal.RunCmd("git", "diff", "-U50", key.FilePath), nil
+		return internal.Git(workdir, "diff", "-U50", key.FilePath), nil
 	case Added:
-		return prefixAllLines(readFileDirectly(key.FilePath), '+'), nil
+		return prefixAllLines(readFileDirectly(workdir, key), '+'), nil
 	case Renamed:
 		return key.FilePath, nil
 	case Deleted:
-		return prefixAllLines(getHeadForFile(key.FilePath), '-'), nil
+		return prefixAllLines(getHeadForFile(workdir, key), '-'), nil
 	}
 	return "", errors.New("Unknown status" + string(key.Status))
 }
 
 // Mostly for displaying untracked files.
 // `git diff --no-index /dev/null myFilePath` is not portable hence we read the content as-is (similar to `cat`)
-func readFileDirectly(filePath string) string {
-	contents, err := os.ReadFile(filePath)
+func readFileDirectly(workdir string, key FileStatus) string {
+	relPath := filepath.Join(workdir, key.FilePath)
+	contents, err := os.ReadFile(relPath)
 	if err != nil {
 		log.Fatal(err)
 	}
 	return string(contents[:])
 }
 
-func getHeadForFile(filePath string) string {
-	rawGitDiff := internal.RunCmd("git", "show", "HEAD^:"+filePath)
+func getHeadForFile(workdir string, key FileStatus) string {
+	rawGitDiff := internal.Git(workdir, "show", "HEAD^:"+key.FilePath)
 	return rawGitDiff
 }
 
